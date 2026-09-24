@@ -1,0 +1,6 @@
+{
+  "name": "雪之下雪乃 · Yukino Digital Archive & Personal Space",
+  "description": "清冷、克制与液态玻璃质感的个人主页与雪之下雪乃角色数字档案馆，融合春物世界观、日记、社区动态、To签工坊、全景资料库与实时聊天室。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
