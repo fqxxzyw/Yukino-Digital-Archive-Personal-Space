@@ -9,6 +9,41 @@ export interface User {
   isCoser?: boolean;
   coserCN?: string;
   createdAt: string;
+  contributionPoints?: number; // 社区贡献度
+}
+
+export interface ArchiveContribution {
+  id: string;
+  userId: string;
+  userName: string;
+  targetType: 'character' | 'lore' | 'episode' | 'gallery';
+  targetTitle: string; // e.g. "雪之下雪乃 · 喜好猫咪与潘先生设定补充"
+  summary: string; // 补全内容概述
+  date: string;
+  likes: number; // 获得的社区点赞数
+  status: 'approved' | 'pending';
+  basePoints: number; // 基础补全贡献值 (50)
+  likePoints: number; // 点赞加权贡献值 (likes * 10)
+  totalPoints: number; // basePoints + likePoints
+}
+
+export interface ContributionSummary {
+  totalPoints: number; // 总贡献值
+  archiveCount: number; // 补全档案条目数
+  totalLikesReceived: number; // 累计获得的被点赞总数
+  level: number; // 贡献者等级 (1-10)
+  levelTitle: string; // 荣誉称号, e.g. "资深档案馆典籍官"
+  // 公式: 贡献度 = (档案补全度 * 0.4) + (获得的被点赞总数 * 0.6)
+  archiveCompleteness: number; // 档案补全度 (0-100%)
+  archiveFormulaWeight: number; // 0.4
+  likeFormulaWeight: number; // 0.6
+  archiveWeightedScore: number; // 档案补全度 * 0.4
+  likeWeightedScore: number; // 获得的被点赞总数 * 0.6
+  formulaScore: number; // 最终加权贡献度
+  targetQuota: number; // 当期阶梯目标额度
+  quotaPercent: number; // 额度达成百分比
+  archiveWeight?: number;
+  likeWeight?: number;
 }
 
 export interface Character {
@@ -130,6 +165,23 @@ export interface MerchItem {
   status: 'released' | 'upcoming';
 }
 
+export interface YukinoSentiment {
+  score: number; // 0-100 心境共鸣与真物指数
+  mood: 'truth_seeking' | 'cold_resilience' | 'gentle_warmth' | 'melancholy' | 'daily_peace';
+  moodLabel: string;
+  color: string;
+  advice: string; // 雪之下雪乃的对应建议或评价
+}
+
+export interface DiaryLocation {
+  name: string; // 地理名称，如“稻毛海滨公园 · 夕阳防波堤”
+  city?: string; // 城市/地区，如“千叶市美滨区”
+  lat: number; // 纬度 (如 35.6190)
+  lng: number; // 经度 (如 140.0580)
+  landmark?: string; // 地标物/场景象征，如“寒风拂过海湾的起点”
+  atmosphere?: string; // 氛围感标签，如“冬日黄昏 · 潮声 · 零星脚印”
+}
+
 export interface Diary {
   id: string;
   title: string;
@@ -140,6 +192,11 @@ export interface Diary {
   tags: string[];
   isPublic: boolean;
   views: number;
+  linkedToSignId?: string;
+  linkedToSignTitle?: string;
+  linkedToSignDedication?: string;
+  sentiment?: YukinoSentiment;
+  location?: DiaryLocation;
 }
 
 export interface Post {
@@ -195,6 +252,8 @@ export interface ToSignRequest {
   status: 'pending' | 'approved' | 'completed' | 'rejected';
   createdAt: string;
   signedImageUrl?: string;
+  author?: string;
+  syncToFeed?: boolean;
 }
 
 export interface CoserCertification {

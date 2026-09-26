@@ -90,11 +90,17 @@ export const FeedView: React.FC<FeedViewProps> = ({
       </div>
 
       {/* 3. Post Feed Stream */}
-      <div className="space-y-6">
-        {posts.map((post) => (
-          <article
+      <div className="space-y-6 focus-dim-group">
+        {posts.map((post, idx) => (
+          <motion.article
             key={post.id}
-            className="rounded-3xl p-6 liquid-glass border border-white/90 shadow-sm space-y-4"
+            whileHover={{ 
+              y: -6, 
+              scale: 1.015, 
+              rotateZ: idx % 2 === 0 ? [-0.2, 0.3, -0.15, 0] : [0.2, -0.3, 0.15, 0],
+              transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 20 }
+            }}
+            className="focus-card-item rounded-3xl p-6 liquid-glass border border-white/95 shadow-sm hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] hover:border-sky-300 transition-all space-y-4 relative z-10"
           >
             {/* Author Zone */}
             <div className="flex items-center justify-between">
@@ -223,7 +229,7 @@ export const FeedView: React.FC<FeedViewProps> = ({
               </motion.div>
             )}
 
-          </article>
+          </motion.article>
         ))}
       </div>
 

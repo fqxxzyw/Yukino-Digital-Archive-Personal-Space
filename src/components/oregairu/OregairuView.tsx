@@ -71,23 +71,30 @@ export const OregairuView: React.FC<OregairuViewProps> = ({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 focus-dim-group"
           >
-            {characters.map((char) => (
-              <div
+            {characters.map((char, idx) => (
+              <motion.div
                 key={char.id}
                 onClick={() => setSelectedChar(char)}
-                className="rounded-3xl p-6 liquid-glass border border-white/90 hover:border-sky-300 hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
+                whileHover={{ 
+                  y: -8, 
+                  scale: 1.025, 
+                  rotateZ: idx % 2 === 0 ? [-0.35, 0.4, -0.2, 0] : [0.35, -0.4, 0.2, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                }}
+                whileTap={{ scale: 0.98, y: -2 }}
+                className="focus-card-item rounded-3xl p-6 liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.28)] transition-all cursor-pointer group flex flex-col justify-between relative z-10"
               >
                 <div>
                   <div className="flex items-center gap-4 mb-4">
                     <img
                       src={char.avatar}
                       alt={char.name}
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-sm group-hover:scale-105 transition-transform"
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-sm group-hover:scale-108 transition-transform duration-500 ease-out"
                     />
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 font-editorial-mincho">
+                      <h3 className="text-base font-bold text-slate-900 font-editorial-mincho group-hover:text-sky-700 transition-colors">
                         {char.name}
                       </h3>
                       <p className="text-xs text-slate-400 font-sans">
@@ -111,9 +118,9 @@ export const OregairuView: React.FC<OregairuViewProps> = ({
 
                 <div className="mt-4 pt-3 flex items-center justify-between text-xs text-sky-600 font-medium">
                   <span>查看角色档案</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         )}
@@ -177,12 +184,18 @@ export const OregairuView: React.FC<OregairuViewProps> = ({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="space-y-6"
+            className="space-y-6 focus-dim-group"
           >
-            {seasons.map((season) => (
-              <div
+            {seasons.map((season, sIdx) => (
+              <motion.div
                 key={season.id}
-                className="p-8 rounded-3xl liquid-glass border border-white/90 shadow-sm space-y-4"
+                whileHover={{ 
+                  y: -6, 
+                  scale: 1.015, 
+                  rotateZ: sIdx % 2 === 0 ? [-0.2, 0.3, -0.15, 0] : [0.2, -0.3, 0.15, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 20 }
+                }}
+                className="focus-card-item p-8 rounded-3xl liquid-glass border border-white/95 shadow-sm hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] hover:border-sky-300 transition-all space-y-4 relative z-10"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-sky-600 font-semibold uppercase">
@@ -203,7 +216,7 @@ export const OregairuView: React.FC<OregairuViewProps> = ({
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
                   {season.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         )}

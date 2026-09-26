@@ -147,7 +147,15 @@ export const api = {
 
   // Diaries
   getDiaries(): Diary[] {
-    return getStorage<Diary[]>(STORAGE_KEYS.DIARIES, diariesData);
+    const list = getStorage<Diary[]>(STORAGE_KEYS.DIARIES, diariesData);
+    return list.map(item => {
+      const defaultItem = diariesData.find(d => d.id === item.id);
+      return {
+        ...item,
+        location: item.location || defaultItem?.location,
+        sentiment: item.sentiment || defaultItem?.sentiment
+      };
+    });
   },
 
   addDiary(diary: Omit<Diary, 'id' | 'views'>): Diary {
@@ -259,6 +267,7 @@ export const api = {
 
   // To-Sign (To签)
   getToSignRequests(): ToSignRequest[] {
+    const todayStr = new Date().toISOString().split('T')[0];
     return getStorage<ToSignRequest[]>(STORAGE_KEYS.TO_SIGN, [
       {
         id: 'tosign_demo_1',
@@ -272,7 +281,8 @@ export const api = {
         positionY: 82,
         inkColor: '#0284c7',
         status: 'approved',
-        createdAt: '2025-01-20'
+        author: '浅羽由乃',
+        createdAt: todayStr
       }
     ]);
   },

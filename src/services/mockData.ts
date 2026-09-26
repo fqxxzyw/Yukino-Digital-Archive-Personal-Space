@@ -562,7 +562,22 @@ export const diariesData: Diary[] = [
     weather: '初雪 · 零下2°C',
     tags: ['春物重温', '千叶随笔', '冬雪', '真物'],
     isPublic: true,
-    views: 452
+    views: 452,
+    location: {
+      name: '千叶市立总武高校 · 特别栋天桥',
+      city: '千叶市稻毛区',
+      lat: 35.6375,
+      lng: 140.0982,
+      landmark: '八幡奔跑追上雪乃的天桥阶梯与部室',
+      atmosphere: '冬雪初落 · 呼气成霜 · 凛冽的真实'
+    },
+    sentiment: {
+      score: 94,
+      mood: 'truth_seeking',
+      moodLabel: '真物探寻 · 叩问本质',
+      color: '#0284c7',
+      advice: '能把这种不甘与追问写下来，至少证明你没有向敷衍的现实妥协。侍奉部认可这份执着。在寒冬里，也请挺起胸膛走下去。'
+    }
   },
   {
     id: 'diary_02',
@@ -579,7 +594,106 @@ export const diariesData: Diary[] = [
     weather: '晴朗 · 5°C',
     tags: ['建站随笔', '设计理念', '数字档案'],
     isPublic: true,
-    views: 680
+    views: 680,
+    location: {
+      name: '海滨幕张 · 美滨大桥夕暮步道',
+      city: '千叶市美滨区中濑',
+      lat: 35.6480,
+      lng: 140.0425,
+      landmark: '晚风拂过海湾的弧线大桥与都市微光',
+      atmosphere: '远眺富士山剪影 · 潮汐翻涌 · 档案馆构思原点'
+    },
+    sentiment: {
+      score: 88,
+      mood: 'cold_resilience',
+      moodLabel: '清冷自持 · 坚毅独立',
+      color: '#0d9488',
+      advice: '虽然克制与自律是值得称赞的品质，但也不要总是把自己逼入无路可退的死角。侍奉部的茶杯随时可以为你添满。'
+    }
+  },
+  {
+    id: 'diary_03',
+    title: '大吉岭红茶与冬日窗边的温热时光',
+    content: `下午煮了一壶大吉岭红茶。热气在冰凉的玻璃窗上结成一层细腻的水雾，慢慢用手指划过，外面枯黄的银杏树便模糊成一团柔和的色块。
+翻开《雪之下雪乃原画集》，看到由比滨和雪乃在夏祭夜里并肩看烟花的插画。即使性格南辕北辙，那份想要靠近的心情却是那般真挚而坦率。
+生活里或许总有解不开的繁复谜题，但只要身边还有能一起安静喝茶的人，寒冬便不再漫长。`,
+    coverImage: '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg',
+    date: '2026-01-18',
+    weather: '晴朗微寒 · 3°C',
+    tags: ['红茶日常', '陪伴', '千叶午后', '治愈'],
+    isPublic: true,
+    views: 520,
+    location: {
+      name: '雪乃常去的欧式红茶馆 · 窗边单人席',
+      city: '千叶市中央区',
+      lat: 35.6085,
+      lng: 140.1140,
+      landmark: '旧街角复古铜把手茶室',
+      atmosphere: '大吉岭蒸汽 · 琥珀色茶汤 · 窗花微温'
+    },
+    sentiment: {
+      score: 92,
+      mood: 'gentle_warmth',
+      moodLabel: '微温红茶 · 治愈坦率',
+      color: '#f59e0b',
+      advice: '……咳，今天文字里的温度很宜人呢。能坦率地表达珍惜，是很多人穷尽一生都未能学会的勇敢。这份温柔，请务必妥善保管好。'
+    }
+  },
+  {
+    id: 'diary_04',
+    title: '黄昏电车站台与无声叹息',
+    content: `千叶站的夕阳总是落得很快。电车呼啸而过带起的冷风卷走最后一缕金红，站台上熙熙攘攘的人群各自赶路，面孔在暮色中显得疏离而麻木。
+忽然想起八幡在文化祭天台上的那场自爆。为了保全虚伪的表面和谐，选择让自己成为所有人唾弃的靶子。那种近乎残忍的温柔，究竟需要吞下多少苦涩才能下定决心？
+有时候也会觉得迷茫与无力，仿佛不论怎么努力，人与人之间的隔阂也无法彻底消融。`,
+    coverImage: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    date: '2025-11-12',
+    weather: '阴冷暮色 · 8°C',
+    tags: ['暮色随想', '千叶电车', '迷惘', '八幡天台'],
+    isPublic: true,
+    views: 389,
+    location: {
+      name: 'JR千叶站 · 总武线黄昏站台',
+      city: '千叶市中央区新千叶',
+      lat: 35.6133,
+      lng: 140.1130,
+      landmark: '急行电车卷过疾风的黄色安全警戒线',
+      atmosphere: '暮色昏黄 · 人流如织 · 孤独也是自由'
+    },
+    sentiment: {
+      score: 76,
+      mood: 'melancholy',
+      moodLabel: '千叶寒冬 · 迷惘落寞',
+      color: '#64748b',
+      advice: '感到迷茫和疲惫并不是什么羞耻的事。坚冰在春天消融前，也会发出痛苦的碎裂声。今天就先好好休息，不要勉强自己去寻找答案。'
+    }
+  },
+  {
+    id: 'diary_05',
+    title: '秋凉晴日：稻毛海滨散步手记',
+    content: `趁着周末去了稻毛海滨公园。秋天的海水褪去了夏日的喧闹，呈现出一种近乎透明的浅蓝。
+沿着海堤走了两个多小时，耳机里单曲循环着早见沙织的角色歌《雪融之时》。海风吹起围巾的一角，远远能望见千叶港塔在晴空下耸立的轮廓。
+什么都不去预设，只是纯粹地行走和呼吸。这样的下午，让内心纷乱的思绪重新落定归位。`,
+    coverImage: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    date: '2025-10-08',
+    weather: '秋高气爽 · 16°C',
+    tags: ['稻毛海岸', '千叶散步', '秋日', '早见沙织'],
+    isPublic: true,
+    views: 610,
+    location: {
+      name: '稻毛海滨公园 · 白砂夕阳防波堤',
+      city: '千叶市美滨区高滨',
+      lat: 35.6190,
+      lng: 140.0580,
+      landmark: '眺望千叶港塔的延伸防波堤',
+      atmosphere: '海风浅唱 · 角色歌回荡 · 内心落定'
+    },
+    sentiment: {
+      score: 86,
+      mood: 'daily_peace',
+      moodLabel: '澄澈宁静 · 随想日常',
+      color: '#059669',
+      advice: '平和而真切的日常，往往蕴藏着最难以被撼动的坚固力量。把平凡的观察记录下来，时间自会赋予它独特的质感。'
+    }
   }
 ];
 

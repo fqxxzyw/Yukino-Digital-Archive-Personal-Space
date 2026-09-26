@@ -174,30 +174,54 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
             exit={{ opacity: 0, y: -15 }}
             className="space-y-8"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 rounded-3xl liquid-glass border border-white/80 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 focus-dim-group">
+              <motion.div 
+                whileHover={{ 
+                  y: -6, 
+                  scale: 1.02, 
+                  rotateZ: [-0.3, 0.4, -0.2, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                }}
+                className="focus-card-item p-6 rounded-3xl liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] transition-all space-y-3 relative z-10"
+              >
                 <span className="text-xs font-mono text-sky-600 font-semibold">01. 侍奉部的创立理念</span>
                 <h3 className="text-base font-bold text-slate-800 font-editorial-mincho">授人以渔，而非授人以鱼</h3>
                 <p className="text-xs text-slate-600 leading-relaxed font-light">
                   雪乃认为无条件给予软弱者施舍只会促长无能，唯有帮助求助者找寻凭借自身克服困难的意志，才是真正意义上的拯救。
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="p-6 rounded-3xl liquid-glass border border-white/80 space-y-3">
+              <motion.div 
+                whileHover={{ 
+                  y: -6, 
+                  scale: 1.02, 
+                  rotateZ: [0.3, -0.4, 0.2, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                }}
+                className="focus-card-item p-6 rounded-3xl liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] transition-all space-y-3 relative z-10"
+              >
                 <span className="text-xs font-mono text-sky-600 font-semibold">02. 潘先生与反差萌</span>
                 <h3 className="text-base font-bold text-slate-800 font-editorial-mincho">清冷坚冰下的柔软之处</h3>
                 <p className="text-xs text-slate-600 leading-relaxed font-light">
                   尽管平时严谨冷峻，但面对千叶吉祥物“潘先生”（Pan-san）以及路边流浪猫时，会流露出毫无戒备的宠溺目光与少女神态。
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="p-6 rounded-3xl liquid-glass border border-white/80 space-y-3">
+              <motion.div 
+                whileHover={{ 
+                  y: -6, 
+                  scale: 1.02, 
+                  rotateZ: [-0.3, 0.4, -0.2, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                }}
+                className="focus-card-item p-6 rounded-3xl liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] transition-all space-y-3 relative z-10"
+              >
                 <span className="text-xs font-mono text-sky-600 font-semibold">03. 真物的终极探寻</span>
                 <h3 className="text-base font-bold text-slate-800 font-editorial-mincho">拒绝虚饰的纯粹纽带</h3>
                 <p className="text-xs text-slate-600 leading-relaxed font-light">
                   她厌恶敷衍的妥协与表面的温情。在天桥的黄昏中与八幡立下一生的托付，宣告了从姐姐阴影中的彻底蜕变。
                 </p>
-              </div>
+              </motion.div>
             </div>
 
             {/* In-depth Character Lore Banner */}
@@ -300,25 +324,32 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {outfits.map((outfit) => (
-                <div
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 focus-dim-group">
+              {outfits.map((outfit, oIdx) => (
+                <motion.div
                   key={outfit.id}
                   onClick={() => setSelectedOutfit(outfit)}
-                  className="rounded-3xl p-5 liquid-glass border border-white/90 hover:border-sky-300 hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
+                  whileHover={{ 
+                    y: -8, 
+                    scale: 1.03, 
+                    rotateZ: oIdx % 2 === 0 ? [-0.4, 0.4, -0.2, 0] : [0.4, -0.4, 0.2, 0],
+                    transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                  }}
+                  whileTap={{ scale: 0.98, y: -2 }}
+                  className="focus-card-item rounded-3xl p-5 liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.28)] transition-all cursor-pointer group flex flex-col justify-between relative z-10"
                 >
                   <div>
                     <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-sm border border-white">
                       <img
                         src={outfit.imageUrl}
                         alt={outfit.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
                       />
                     </div>
                     <span className="text-[10px] font-mono text-sky-600 uppercase font-semibold">
                       {outfit.type}
                     </span>
-                    <h4 className="text-sm font-bold text-slate-900 font-editorial-mincho mt-0.5">
+                    <h4 className="text-sm font-bold text-slate-900 font-editorial-mincho mt-0.5 group-hover:text-sky-700 transition-colors">
                       {outfit.name}
                     </h4>
                     <p className="text-[11px] text-slate-500 line-clamp-2 mt-1.5 font-light">
@@ -328,9 +359,9 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-sky-600 font-medium">
                     <span>首次登场: {outfit.firstAppearance.slice(0, 7)}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -397,11 +428,17 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
             exit={{ opacity: 0, y: -15 }}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {quotes.map((quote) => (
-                <div
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 focus-dim-group">
+              {quotes.map((quote, qIdx) => (
+                <motion.div
                   key={quote.id}
-                  className="rounded-3xl p-6 sm:p-7 liquid-glass border border-white/80 hover:shadow-md transition-all flex flex-col justify-between"
+                  whileHover={{ 
+                    y: -8, 
+                    scale: 1.025, 
+                    rotateZ: qIdx % 2 === 0 ? [-0.3, 0.4, -0.2, 0] : [0.3, -0.4, 0.2, 0],
+                    transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                  }}
+                  className="focus-card-item rounded-3xl p-6 sm:p-7 liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.28)] transition-all flex flex-col justify-between relative z-10"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
@@ -427,7 +464,7 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
                     <span>场景：{quote.scene}</span>
                     <span className="text-sky-600 font-medium">雪之下雪乃</span>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -486,25 +523,31 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 focus-dim-group"
           >
-            {merch.map((item) => (
-              <div
+            {merch.map((item, mIdx) => (
+              <motion.div
                 key={item.id}
-                className="rounded-3xl p-5 liquid-glass border border-white/80 hover:shadow-md transition-all flex flex-col justify-between"
+                whileHover={{ 
+                  y: -8, 
+                  scale: 1.03, 
+                  rotateZ: mIdx % 2 === 0 ? [-0.35, 0.4, -0.2, 0] : [0.35, -0.4, 0.2, 0],
+                  transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+                }}
+                className="focus-card-item rounded-3xl p-5 liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.28)] transition-all flex flex-col justify-between relative z-10"
               >
                 <div>
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-3 shadow-sm border border-white">
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover hover:scale-108 transition-transform duration-500 ease-out"
                     />
                   </div>
                   <span className="text-[10px] font-mono text-sky-600 uppercase font-semibold">
                     {item.manufacturer}
                   </span>
-                  <h4 className="text-xs font-bold text-slate-900 font-editorial-mincho mt-0.5">
+                  <h4 className="text-xs font-bold text-slate-900 font-editorial-mincho mt-0.5 group-hover:text-sky-700 transition-colors">
                     {item.name}
                   </h4>
                   <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 font-light">
@@ -516,7 +559,7 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
                   <span className="text-slate-400 font-mono">{item.releaseDate}</span>
                   <span className="font-semibold text-slate-900 font-mono">{item.price}</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         )}

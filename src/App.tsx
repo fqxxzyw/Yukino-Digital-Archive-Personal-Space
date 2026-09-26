@@ -33,6 +33,7 @@ import { ToSignModal } from './components/tosign/ToSignModal';
 import { SearchModal } from './components/search/SearchModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { DesignPhilosophyModal } from './components/common/DesignPhilosophyModal';
+import { DevDocsModal } from './components/common/DevDocsModal';
 import { SnowfallCanvas } from './components/common/SnowfallCanvas';
 
 export default function App() {
@@ -75,6 +76,7 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [isPhilosophyOpen, setIsPhilosophyOpen] = useState<boolean>(false);
+  const [isDevDocsOpen, setIsDevDocsOpen] = useState<boolean>(false);
 
   // Keyboard shortcut '/' to trigger search
   useEffect(() => {
@@ -136,6 +138,14 @@ export default function App() {
   const handleSubmitToSign = (req: Omit<ToSignRequest, 'id' | 'createdAt' | 'status'>) => {
     api.createToSignRequest(req);
     setToSignRequests(api.getToSignRequests());
+
+    if (req.syncToFeed) {
+      const authorAt = req.author ? `@${req.author}` : '@浅羽由乃';
+      const postContent = `刚刚向 ${authorAt} 递交了《${req.galleryTitle}》专属 To 签定制申请！\n\n受签落款：TO ${req.requesterCN}\n专属赠言：「${req.dedicationText}」\n印记坐标：(${req.positionX}%, ${req.positionY}%)\n\n愿真心跨越千叶风雪，静候亲笔墨迹与属于彼此的真物记忆。✨`;
+      const postTags = ['To签定制', '雪之下雪乃', '侍奉部专属', '千叶日常', '真物'];
+      api.addPost(postContent, [req.imageUrl], postTags);
+      setPosts(api.getPosts());
+    }
   };
 
   const handleUpdateToSignStatus = (id: string, status: ToSignRequest['status']) => {
@@ -238,6 +248,7 @@ export default function App() {
         isPlayingAudio={isPlayingAudio}
         onToggleAudioWidget={() => setIsAudioPlayerOpen(!isAudioPlayerOpen)}
         onOpenDesignPhilosophy={() => setIsPhilosophyOpen(true)}
+        onOpenDevDocs={() => setIsDevDocsOpen(true)}
       />
 
       {/* 2. Main Page Content with Animated Transitions */}
@@ -320,6 +331,7 @@ export default function App() {
               <DiaryView
                 diaries={diaries}
                 user={user}
+                toSignRequests={toSignRequests}
                 onAddDiary={handleAddDiary}
                 onDeleteDiary={handleDeleteDiary}
               />
@@ -421,6 +433,12 @@ export default function App() {
         onClose={() => setIsPhilosophyOpen(false)}
       />
 
+      {/* 7.6. Developer & Commercial Deployment Docs Modal */}
+      <DevDocsModal
+        isOpen={isDevDocsOpen}
+        onClose={() => setIsDevDocsOpen(false)}
+      />
+
       {/* 8. Mobile Safe-Area Floating Bottom Dock Bar */}
       <FloatingTabBar
         currentTab={currentTab}
@@ -438,6 +456,21 @@ export default function App() {
         <p className="font-sans text-[11px] text-slate-400/80 font-light">
           基于 Liquid Glass 设计系统构建 · 愿不被伪物所蒙蔽的真心，终能穿越风雪与寒冬
         </p>
+        <div className="pt-2 flex items-center justify-center gap-4 text-xs font-sans">
+          <button
+            onClick={() => setIsPhilosophyOpen(true)}
+            className="text-slate-500 hover:text-sky-600 transition-colors"
+          >
+            设计方案与重构论 (Design Specs)
+          </button>
+          <span>·</span>
+          <button
+            onClick={() => setIsDevDocsOpen(true)}
+            className="text-sky-600 hover:text-sky-700 font-medium transition-colors flex items-center gap-1"
+          >
+            全栈开发与商业部署文档 (Developer Docs)
+          </button>
+        </div>
       </footer>
 
     </div>

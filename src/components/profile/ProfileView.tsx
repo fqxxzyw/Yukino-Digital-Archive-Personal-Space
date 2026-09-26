@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, ToSignRequest, GalleryItem, Post, CoserCertification } from '../../types';
-import { Bookmark, PenTool, Sparkles, Shield, Camera, Check, Clock, AlertCircle } from 'lucide-react';
+import { User, ToSignRequest, GalleryItem, Post, CoserCertification, ArchiveContribution } from '../../types';
+import { 
+  Bookmark, PenTool, Sparkles, Shield, Camera, Check, Clock, AlertCircle,
+  Award, Database, ThumbsUp, Plus, Heart, HelpCircle, Layers, X, FileText, ChevronRight
+} from 'lucide-react';
 import { EmptyState } from '../common/EmptyState';
+import { ActivityDotMatrix, ActivityMatrixItem } from '../common/ActivityDotMatrix';
+import { ContributionDashboard } from './ContributionDashboard';
+import { 
+  getStoredContributions, calculateContributionSummary, addArchiveContribution, 
+  likeContribution, WEIGHT_ARCHIVE, WEIGHT_LIKE, FORMULA_ARCHIVE_WEIGHT, FORMULA_LIKE_WEIGHT
+} from '../../services/contributionService';
 
 interface ProfileViewProps {
   user: User;
@@ -21,11 +30,55 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onApplyCoser,
   coserCert
 }) => {
-  const [activeTab, setActiveTab] = useState<'tosign' | 'favorites' | 'coser_cert' | 'settings'>('tosign');
+  const [activeTab, setActiveTab] = useState<'contributions' | 'tosign' | 'favorites' | 'coser_cert' | 'settings'>('contributions');
   const [coserCN, setCoserCN] = useState(user.coserCN || '');
   const [coserBio, setCoserBio] = useState('长期专注于雪之下雪乃角色出片，曾参展千叶动漫嘉年华。');
   const [portfolioLink, setPortfolioLink] = useState('https://weibo.com/p/my_portfolio');
   const [applySuccess, setApplySuccess] = useState(false);
+
+  // Contributions State & Computation
+  const [contributions, setContributions] = useState<ArchiveContribution[]>(() => getStoredContributions());
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newSummary, setNewSummary] = useState('');
+  const [newType, setNewType] = useState<ArchiveContribution['targetType']>('character');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const contributionSummary = useMemo(() => {
+    return calculateContributionSummary(contributions);
+  }, [contributions]);
+
+  const contributionActivityItems = useMemo<ActivityMatrixItem[]>(() => {
+    return contributions.map(c => ({
+      id: c.id,
+      date: c.date,
+      value: c.totalPoints,
+      color: '#2563eb', // Token-blue matching the user screenshot
+      label: `+${Number((c.likes * 0.6 + 5).toFixed(1))} 贡献加权 (获赞:${c.likes}次 · 权重0.6)`,
+      title: c.targetTitle,
+      secondaryValue: c.likes,
+      meta: c
+    }));
+  }, [contributions]);
+
+  const handleAddContribution = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newSummary.trim()) return;
+    addArchiveContribution(newTitle, newSummary, newType);
+    setContributions(getStoredContributions());
+    setNewTitle('');
+    setNewSummary('');
+    setSubmitSuccess(true);
+    setTimeout(() => {
+      setSubmitSuccess(false);
+      setIsSubmitModalOpen(false);
+    }, 1200);
+  };
+
+  const handleLikeContribution = (id: string) => {
+    const updated = likeContribution(id);
+    setContributions(updated);
+  };
 
   const [nickname, setNickname] = useState(user.nickname);
   const [bio, setBio] = useState(user.bio);
@@ -102,10 +155,40 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </div>
 
+      {/* 1.5. Community Contribution Token Dashboard & Heatmap Dot Matrix (社区贡献度仪表盘与Token使用量UI) */}
+      <div className="space-y-5">
+        {/* Main Contribution Token Dashboard with Dual Visual Progress Bars & Formula */}
+        <ContributionDashboard
+          summary={contributionSummary}
+          onOpenSubmitModal={() => setIsSubmitModalOpen(true)}
+        />
+
+        {/* Token-style Activity Dot Matrix (时序点阵活动图) */}
+        <ActivityDotMatrix
+          title="贡献热力活动"
+          subtitle="时序点阵映射历史考据补全与点赞认同轨迹 · 累计阶梯式爬升"
+          items={contributionActivityItems}
+          defaultMode="cumulative"
+          defaultFilledColor="#2563eb"
+          summarySlot={
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+              <span className="text-slate-500 font-mono">
+                当前活跃统计周期: <strong className="text-blue-600 font-bold">近12个月</strong>
+              </span>
+              <span>·</span>
+              <span className="text-slate-500 font-mono">
+                当前生效公式: <strong className="text-slate-800 font-bold">(档案补全度 × 0.4) + (获赞总数 × 0.6) = {contributionSummary.formulaScore} 分</strong>
+              </span>
+            </div>
+          }
+        />
+      </div>
+
       {/* 2. Navigation Tabs */}
       <div className="flex justify-center sm:justify-start">
-        <div className="p-1 rounded-2xl liquid-glass border border-white/90 flex gap-1 shadow-sm">
+        <div className="p-1 rounded-2xl liquid-glass border border-white/90 flex flex-wrap gap-1 shadow-sm">
           {[
+            { id: 'contributions', label: '档案共建明细', icon: Award },
             { id: 'tosign', label: '我的 To 签', icon: PenTool },
             { id: 'favorites', label: '我的收藏', icon: Bookmark },
             { id: 'coser_cert', label: 'Coser 认证申请', icon: Camera },
@@ -132,6 +215,94 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* 3. Tab Contents */}
       <AnimatePresence mode="wait">
         
+        {/* Contributions Tab */}
+        {activeTab === 'contributions' && (
+          <motion.div
+            key="contributions"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 font-editorial-mincho">
+                  我的档案补全与考据记录
+                </h3>
+                <p className="text-xs text-slate-500 font-light mt-0.5">
+                  你对雪野原档案馆的每一次修撰与考据补全，都将被永久铭刻并计入社区热力贡献图谱。
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsSubmitModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold flex items-center gap-1 shadow-xs active:scale-95 transition-all shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>新建补全词条</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3.5">
+              {contributions.map((item) => (
+                <motion.div
+                  key={item.id}
+                  whileHover={{ y: -3, scale: 1.008 }}
+                  className="rounded-2xl p-4 bg-white/95 border border-slate-200/80 shadow-xs hover:border-sky-300 hover:shadow-md transition-all space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/50">
+                          {item.targetType === 'character' ? '人物设定' : item.targetType === 'lore' ? '世界观圣地' : item.targetType === 'episode' ? '剧情细节' : '画集图谱'}
+                        </span>
+                        <h4 className="text-sm font-bold text-slate-900 font-editorial-mincho truncate">
+                          {item.targetTitle}
+                        </h4>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
+                        贡献日期: {item.date} · 状态: 已入库生效
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 bg-blue-50/80 px-2.5 py-1 rounded-xl border border-blue-200/50">
+                      <Award className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="text-xs font-mono font-bold text-blue-700">
+                        +{item.totalPoints}
+                      </span>
+                      <span className="text-[10px] text-blue-500">贡献分</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed font-light bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    {item.summary}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs text-slate-400">
+                    <div className="flex items-center gap-3 text-[11px] font-mono">
+                      <span>补全考据权重: <strong className="text-sky-700">40% (×0.4)</strong></span>
+                      <span>·</span>
+                      <span>获赞加权加成: <strong className="text-blue-700">+{Number((item.likes * FORMULA_LIKE_WEIGHT).toFixed(1))}</strong> (0.6 × {item.likes}赞)</span>
+                    </div>
+
+                    {/* Like Simulator Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleLikeContribution(item.id)}
+                      className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100/80 text-rose-600 border border-rose-200/60 text-xs font-mono flex items-center gap-1 active:scale-95 transition-all"
+                      title="模拟社区读者为此词条点赞 (依公式贡献度增加 0.6 分)"
+                    >
+                      <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
+                      <span>{item.likes} 点赞</span>
+                      <span className="text-[10px] text-rose-400">(+0.6分)</span>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        
         {/* To Sign Requests Tab */}
         {activeTab === 'tosign' && (
           <motion.div
@@ -139,7 +310,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4"
+            className="space-y-4 focus-dim-group"
           >
             {toSignRequests.length === 0 ? (
               <EmptyState
@@ -148,10 +319,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 customSubtitle="在图库或社区中找到心仪的 Coser 作品，点击「申请 To 签」即可开启定制。"
               />
             ) : (
-              toSignRequests.map((req) => (
-                <div
+              toSignRequests.map((req, rIdx) => (
+                <motion.div
                   key={req.id}
-                  className="rounded-3xl p-5 sm:p-6 liquid-glass border border-white/90 shadow-sm flex flex-col sm:flex-row gap-5 items-start"
+                  whileHover={{ 
+                    y: -6, 
+                    scale: 1.015, 
+                    rotateZ: rIdx % 2 === 0 ? [-0.2, 0.3, -0.15, 0] : [0.2, -0.3, 0.15, 0],
+                    transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 20 }
+                  }}
+                  className="focus-card-item rounded-3xl p-5 sm:p-6 liquid-glass border border-white/95 shadow-sm hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] hover:border-sky-300 transition-all flex flex-col sm:flex-row gap-5 items-start relative z-10"
                 >
                   <div className="w-full sm:w-40 aspect-[4/3] rounded-2xl overflow-hidden shadow-sm shrink-0 border border-white relative">
                     <img
@@ -193,7 +370,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       <div>递交日期：<span className="font-mono">{req.createdAt}</span></div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </motion.div>
@@ -206,22 +383,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-4"
+            className="space-y-4 focus-dim-group"
           >
             {bookmarkedPosts.length === 0 ? (
               <EmptyState type="favorites" />
             ) : (
-              bookmarkedPosts.map((post) => (
-                <div
+              bookmarkedPosts.map((post, pIdx) => (
+                <motion.div
                   key={post.id}
-                  className="rounded-3xl p-5 liquid-glass border border-white/90 space-y-2"
+                  whileHover={{ 
+                    y: -6, 
+                    scale: 1.015, 
+                    rotateZ: pIdx % 2 === 0 ? [-0.2, 0.3, -0.15, 0] : [0.2, -0.3, 0.15, 0],
+                    transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 20 }
+                  }}
+                  className="focus-card-item rounded-3xl p-5 liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] transition-all space-y-2 relative z-10"
                 >
                   <div className="flex items-center gap-2">
                     <img src={post.userAvatar} alt="" className="w-6 h-6 rounded-full" />
                     <span className="text-xs font-bold text-slate-800">{post.userName}</span>
                   </div>
                   <p className="text-xs text-slate-600 line-clamp-2">{post.content}</p>
-                </div>
+                </motion.div>
               ))
             )}
           </motion.div>
@@ -352,6 +535,148 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </motion.div>
         )}
 
+      </AnimatePresence>
+
+      {/* Submit Archive Contribution Modal */}
+      <AnimatePresence>
+        {isSubmitModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-[24px]"
+            onClick={() => setIsSubmitModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg apple-spring-glass rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/95 space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Database className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 font-editorial-mincho">
+                      补全档案词条 · 增益社区贡献度
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-sans">
+                      提交一条新考据/档案细节即可提升档案补全度 (权重 ×0.4)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsSubmitModalOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {submitSuccess ? (
+                <div className="py-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-bounce">
+                    <Check className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-base font-bold text-slate-800">
+                    档案补全成功入库！
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    档案补全度与贡献度仪表盘已实时更新，累计获赞将享 <strong className="text-blue-600">60% 加权加成</strong>。
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleAddContribution} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      词条归属类别
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: 'character', label: '人物设定' },
+                        { id: 'lore', label: '世界观圣地' },
+                        { id: 'episode', label: '剧情名场面' },
+                        { id: 'gallery', label: '画集图谱' }
+                      ].map(t => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setNewType(t.id as any)}
+                          className={`py-1.5 px-2 rounded-xl text-xs font-medium border transition-all ${
+                            newType === t.id
+                              ? 'bg-blue-500 text-white border-blue-500 shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      补全词条名称
+                    </label>
+                    <input
+                      type="text"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      placeholder="例如：雪乃在猫咪咖啡厅的隐藏台词考析"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      补全内容概述与考据来源
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={newSummary}
+                      onChange={(e) => setNewSummary(e.target.value)}
+                      placeholder="详细写下补充的设定背景、剧情帧数、原著小说卷数或圣地经纬度..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none leading-relaxed"
+                      required
+                    />
+                  </div>
+
+                  {/* Weight explanation */}
+                  <div className="rounded-xl bg-blue-50/70 p-3 border border-blue-100 text-xs text-blue-900 space-y-1">
+                    <div className="font-bold flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                      <span>计算公式：贡献度 = (档案补全度 × 0.4) + (被点赞总数 × 0.6)</span>
+                    </div>
+                    <p className="text-[11px] text-blue-700/90 leading-relaxed font-light">
+                      提交后直接提升档案库完备度（占 40% 权重）。词条日后收获读者点赞时，每次点赞可产生 0.6 贡献分加成（占 60% 权重），仪表盘与进度条实时响应。
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsSubmitModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-100"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm active:scale-95 transition-all"
+                    >
+                      确认入库并获取 +50 分
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
     </div>

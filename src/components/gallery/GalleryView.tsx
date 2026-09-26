@@ -68,19 +68,26 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
       </div>
 
       {/* Masonry-Style Natural Image Layout */}
-      <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-        {filteredItems.map((item) => (
-          <div
+      <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 focus-dim-group">
+        {filteredItems.map((item, idx) => (
+          <motion.div
             key={item.id}
             onClick={() => onOpenLightbox(item)}
-            className="break-inside-avoid rounded-3xl overflow-hidden liquid-glass border border-white/90 hover:border-sky-300 hover:shadow-xl transition-all cursor-pointer group relative"
+            whileHover={{ 
+              y: -8, 
+              scale: 1.025, 
+              rotateZ: idx % 2 === 0 ? [-0.35, 0.4, -0.2, 0] : [0.35, -0.4, 0.2, 0],
+              transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 18 }
+            }}
+            whileTap={{ scale: 0.98, y: -2 }}
+            className="focus-card-item break-inside-avoid rounded-3xl overflow-hidden liquid-glass border border-white/95 hover:border-sky-300 hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.3)] transition-all cursor-pointer group relative z-10"
           >
             {/* Image */}
             <div className="relative overflow-hidden">
               <img
                 src={item.imageUrl}
                 alt={item.title}
-                className="w-full h-auto object-cover group-hover:scale-103 transition-transform duration-500"
+                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 text-white" />
 
@@ -135,7 +142,7 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                 {item.source}
               </span>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 

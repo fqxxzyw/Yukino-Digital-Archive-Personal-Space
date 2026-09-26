@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Layers, Compass, Eye, Sparkles, CheckCircle, Code2, 
   Palette, ShieldAlert, Cpu, Download, Copy, Printer, Check,
-  FileText, Sparkle, ExternalLink
+  FileText, Sparkle, ExternalLink, Server, Database, Rocket, Terminal
 } from 'lucide-react';
 
 interface DesignPhilosophyModalProps {
@@ -15,7 +15,7 @@ export const DesignPhilosophyModal: React.FC<DesignPhilosophyModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const [activeTab, setActiveTab] = useState<'inspire' | 'deconstruct' | 'rebuild' | 'defend' | 'export'>('inspire');
+  const [activeTab, setActiveTab] = useState<'inspire' | 'deconstruct' | 'rebuild' | 'defend' | 'fullstack' | 'export'>('inspire');
   const [copied, setCopied] = useState<boolean>(false);
 
   const tabs = [
@@ -23,7 +23,8 @@ export const DesignPhilosophyModal: React.FC<DesignPhilosophyModalProps> = ({
     { id: 'deconstruct', label: '2. 深度解构分析', icon: Layers, source: 'Figma 网格 / 字体级 / 微交互目的' },
     { id: 'rebuild', label: '3. 场景创新重构', icon: Sparkles, source: 'Apple Liquid Glass / 音画联觉 / 5步To签' },
     { id: 'defend', label: '4. 原创壁垒与验证', icon: ShieldAlert, source: '防同质化 / 动效曲线 / 解决真实痛点' },
-    { id: 'export', label: '5. 导出设计方案与规范', icon: Download, source: 'Markdown / 文档规范 / 一键下载与复制' }
+    { id: 'fullstack', label: '5. 全栈架构与商业部署', icon: Terminal, source: '前端 / 后端 / PostgreSQL / Docker' },
+    { id: 'export', label: '6. 导出设计方案与规范', icon: Download, source: 'Markdown / 文档规范 / 一键下载与复制' }
   ];
 
   const fullDesignSpecMarkdown = `# 雪之下雪乃 · 个人生活空间与数字档案馆
@@ -67,13 +68,14 @@ export const DesignPhilosophyModal: React.FC<DesignPhilosophyModalProps> = ({
 ---
 
 ### 四、 动效物理学规范 (Apple Wobble Physics, Focus-Dimming & Micro-interactions)
-1. **Q 弹晃动微悬浮物理系统 (Wobble Floating Animation)**：
-   - 全站核心卡片悬停时触发微晃动悬浮物理动画：
-     \`whileHover: { y: -8, scale: 1.025, rotateZ: [-0.3, 0.4, -0.2, 0] }\`
-     \`transition: { type: 'spring', stiffness: 320~380, damping: 18 }\`
+1. **Q 弹晃动微悬浮物理系统 (Global Wobble Floating Animation)**：
+   - **已全站全局无缝落地**：覆盖首页、视觉画廊 (Gallery)、经历编年史与服饰 (Yukino)、人物与动画分季 (Oregairu)、社区动态 (Feed) 与个人档案 (Profile)。
+   - 核心交互卡片悬停时触发微晃动悬浮物理动画：
+     \`whileHover: { y: -8, scale: 1.025, rotateZ: [-0.35, 0.4, -0.2, 0] }\`
+     \`transition: { type: 'spring', stiffness: 350, damping: 18 }\`
    - 模拟真实物理世界的微惯性晃动，在触碰时兼具果冻般的生动回弹与克制的高级感。
-2. **同屏焦点暗区引导机制 (Focus-Dimming Group)**：
-   - 采用 CSS \`.focus-dim-group:has(.focus-card-item:hover) .focus-card-item:not(:hover)\`：
+2. **同屏焦点暗区引导机制 (Global Focus-Dimming Group)**：
+   - 采用 CSS \`.focus-dim-group:has(.focus-card-item:hover) .focus-card-item:not(:hover)\` 全局统一架构：
    - 当用户视线与鼠标悬停在特定卡片时，同组非焦点卡片轻度虚化淡退（\`opacity: 0.65, blur(0.6px), scale(0.985)\`），当前焦点卡片瞬间凸显，大幅强化视觉层级与阅读专注度。
 3. **全键盘无障碍沉浸灯箱 (Keyboard Accessible Lightbox)**：
    - \`ArrowRight\`：平滑切换至下一张画作 / Coser 成片；
@@ -429,6 +431,100 @@ export const DesignPhilosophyModal: React.FC<DesignPhilosophyModalProps> = ({
                   <p className="text-xs text-slate-500 font-light">
                     把 Eagle、Figma 组件库化与 React 状态机结合，每一次灵感借鉴都先问「为什么原作者这样排布」，再问「它能否为春物与雪乃的沉浸叙事带来不可替代的价值」。
                   </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tab 5: Fullstack & Deployment */}
+          {activeTab === 'fullstack' && (
+            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50 border border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
+                    <Terminal className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm font-editorial-mincho">
+                      全栈工程架构与商业级生产部署规范 (Full-Stack & Commercial Deployment)
+                    </h4>
+                    <p className="text-xs text-slate-500 font-light">
+                      涵盖前端架构、Node/Go 后端微服务、PostgreSQL 数据库建表与 Docker 生产级容器化部署。
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-mono bg-sky-100 text-sky-700 px-2.5 py-1 rounded-full font-medium">
+                    根目录: /DEVELOPMENT.md
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                      <Code2 className="w-4 h-4 text-sky-500" />
+                      前端架构与特色机制
+                    </h5>
+                    <span className="text-[10px] font-mono text-sky-600 bg-sky-50 px-2 py-0.5 rounded">React 18 + Tailwind v4</span>
+                  </div>
+                  <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                    <li><strong>Apple Liquid Glass</strong>: 冷蓝雾面底座 + 34px 高斯模糊 + 顶边镜面棱镜反光。</li>
+                    <li><strong>Wobble 弹簧阻尼</strong>: <code>whileHover: y: -8, scale: 1.025, rotateZ: [-0.3, 0.4, -0.2, 0]</code>。</li>
+                    <li><strong>同屏暗区聚焦</strong>: 基于纯 CSS <code>:has()</code> 选择器实现非焦点卡片轻度退避。</li>
+                    <li><strong>日记与 To 签联动</strong>: 自动推荐今日申请的 To 签并一键插入正文与封面。</li>
+                    <li><strong>一键同步发布动态</strong>: 递交 To 签时自动 @Coser 并聚合专属话题标签。</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                      <Server className="w-4 h-4 text-emerald-500" />
+                      后端 RESTful 与 WebSocket 双工
+                    </h5>
+                    <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Node / Go + Redis</span>
+                  </div>
+                  <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                    <li><strong>无状态鉴权</strong>: JWT 双 Token 机制（Access + HttpOnly Refresh Token）。</li>
+                    <li><strong>角色权限 RBAC</strong>: 用户 (USER)、Coser (COSER)、管理员 (ADMIN)。</li>
+                    <li><strong>落款印章合成</strong>: Sharp 图像微服务根据 (X%, Y%) 坐标压感向量图层合成。</li>
+                    <li><strong>实时双工通信</strong>: WebSocket 保持心跳保活与 Redis Pub/Sub 广播分发。</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                      <Database className="w-4 h-4 text-purple-500" />
+                      PostgreSQL 数据库持久化
+                    </h5>
+                    <span className="text-[10px] font-mono text-purple-600 bg-purple-50 px-2 py-0.5 rounded">PG 16 + GIN 索引</span>
+                  </div>
+                  <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                    <li><strong>核心数据表</strong>: users, to_sign_requests, diaries, posts, galleries。</li>
+                    <li><strong>关联约束</strong>: 日记表外键关联 <code>linked_to_sign_id</code>，支持级联与独立解耦。</li>
+                    <li><strong>索引加速</strong>: GIN 倒排索引加速标签与全文检索，B-Tree 复合索引加速时间轴。</li>
+                    <li><strong>缓存拓扑</strong>: Redis 支撑高频接口 Rate Limit 令牌桶防刷与会话缓存。</li>
+                  </ul>
+                </div>
+
+                <div className="p-4 rounded-2xl border border-slate-200 bg-white/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                      <Rocket className="w-4 h-4 text-rose-500" />
+                      商业级全流程生产部署
+                    </h5>
+                    <span className="text-[10px] font-mono text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Docker + Cloud Run + Nginx</span>
+                  </div>
+                  <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                    <li><strong>多阶段构建</strong>: Dockerfile 编译 TypeScript 产物，最终镜像基于 Alpine 仅 20MB。</li>
+                    <li><strong>Nginx 生产配置</strong>: Gzip 开启、静态资源 1 年强缓存、SPA try_files 兜底。</li>
+                    <li><strong>云原生扩缩容</strong>: Google Cloud Run / AWS ECS 支持 0~100 实例按需自动弹性伸缩。</li>
+                    <li><strong>合规防线</strong>: 域名工信部与公安网安备案、内容安全敏感词 API 审核、防盗链。</li>
+                  </ul>
                 </div>
               </div>
             </motion.div>

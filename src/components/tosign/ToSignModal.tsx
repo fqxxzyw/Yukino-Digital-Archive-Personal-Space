@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, ArrowRight, ArrowLeft, PenTool, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { X, Check, ArrowRight, ArrowLeft, PenTool, Sparkles, Image as ImageIcon, Share2, AtSign, Hash } from 'lucide-react';
 import { GalleryItem, ToSignRequest } from '../../types';
 
 interface ToSignModalProps {
@@ -28,6 +28,7 @@ export const ToSignModal: React.FC<ToSignModalProps> = ({
   const [positionX, setPositionX] = useState<number>(65);
   const [positionY, setPositionY] = useState<number>(80);
   const [inkColor, setInkColor] = useState<string>('#0284c7');
+  const [syncToFeed, setSyncToFeed] = useState<boolean>(true);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   // Sync if preselectedItem changes
@@ -70,7 +71,9 @@ export const ToSignModal: React.FC<ToSignModalProps> = ({
       remarks,
       positionX,
       positionY,
-      inkColor
+      inkColor,
+      author: selectedImage.author || '浅羽由乃',
+      syncToFeed
     });
     setIsSuccess(true);
     setTimeout(() => {
@@ -342,41 +345,103 @@ export const ToSignModal: React.FC<ToSignModalProps> = ({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-4 py-2"
+                className="space-y-3.5 py-1"
               >
                 {isSuccess ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-center">
-                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3">
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3 shadow-sm border border-emerald-200">
                       <Check className="w-6 h-6" />
                     </div>
                     <h4 className="text-sm font-semibold text-slate-800">
                       To 签申请已成功递交！
                     </h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Coser 审核后将在「个人中心 · 我的 To 签」为您生成专属成片。
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                      {syncToFeed 
+                        ? '已同步一键发布至侍奉会社区动态（已自动 @Coser 与添加专属话题标签），Coser 审核后将在「个人中心」为您生成专属成片。' 
+                        : 'Coser 审核后将在「个人中心 · 我的 To 签」为您生成专属成片。'}
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-2.5 text-xs text-slate-700">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">签名图片</span>
-                      <span className="font-medium text-slate-900">{selectedImage?.title}</span>
+                  <>
+                    <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80 space-y-2 text-xs text-slate-700">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">签名图片</span>
+                        <span className="font-medium text-slate-900 truncate max-w-[200px]">{selectedImage?.title}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">受签 CN</span>
+                        <span className="font-medium text-slate-900">{requesterCN}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">专属 Coser</span>
+                        <span className="text-sky-600 font-medium">@{selectedImage?.author || '浅羽由乃'}</span>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-slate-400 shrink-0">落款题辞</span>
+                        <span className="font-editorial-mincho text-slate-900 max-w-xs truncate text-right">
+                          {dedicationText}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">特殊要求</span>
+                        <span className="text-slate-600 truncate max-w-[200px]">{remarks || '无'}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">受签 CN</span>
-                      <span className="font-medium text-slate-900">{requesterCN}</span>
+
+                    {/* Sync to Feed Option */}
+                    <div className="rounded-2xl border border-sky-200/80 bg-gradient-to-r from-sky-50/80 to-blue-50/60 p-3.5 space-y-2.5 transition-all">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={syncToFeed}
+                            onChange={(e) => setSyncToFeed(e.target.checked)}
+                            className="w-4 h-4 rounded text-sky-500 focus:ring-sky-400 border-slate-300"
+                          />
+                          <div className="flex items-center gap-1.5">
+                            <Share2 className="w-3.5 h-3.5 text-sky-600" />
+                            <span className="text-xs font-semibold text-slate-800">
+                              一键同步发布至侍奉会社区动态
+                            </span>
+                          </div>
+                        </label>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-medium">
+                          自动 @ & 话题标签
+                        </span>
+                      </div>
+
+                      {syncToFeed && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-2 pt-2 border-t border-sky-100 text-xs text-slate-600"
+                        >
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono text-sky-700">
+                            <span className="flex items-center gap-0.5 bg-white/90 px-2 py-0.5 rounded-md border border-sky-200/70 shadow-xs">
+                              <AtSign className="w-3 h-3 text-sky-500" />
+                              <span>{selectedImage?.author || '浅羽由乃'}</span>
+                            </span>
+                            <span className="flex items-center gap-0.5 bg-white/90 px-2 py-0.5 rounded-md border border-sky-200/70 shadow-xs">
+                              <Hash className="w-3 h-3 text-sky-500" />
+                              <span>To签定制</span>
+                            </span>
+                            <span className="flex items-center gap-0.5 bg-white/90 px-2 py-0.5 rounded-md border border-sky-200/70 shadow-xs">
+                              <Hash className="w-3 h-3 text-sky-500" />
+                              <span>雪之下雪乃</span>
+                            </span>
+                            <span className="flex items-center gap-0.5 bg-white/90 px-2 py-0.5 rounded-md border border-sky-200/70 shadow-xs">
+                              <Hash className="w-3 h-3 text-sky-500" />
+                              <span>侍奉部专属</span>
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 bg-white/70 p-2.5 rounded-xl border border-sky-100/80 leading-relaxed font-sans line-clamp-2">
+                            “刚刚向 @{selectedImage?.author || '浅羽由乃'} 递交了《{selectedImage?.title}》专属 To 签申请！受签：TO {requesterCN}，题辞：「{dedicationText.slice(0, 36)}...」✨”
+                          </p>
+                        </motion.div>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">落款题辞</span>
-                      <span className="font-editorial-mincho text-slate-900 max-w-xs truncate text-right">
-                        {dedicationText}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">特殊要求</span>
-                      <span className="text-slate-600">{remarks || '无'}</span>
-                    </div>
-                  </div>
+                  </>
                 )}
               </motion.div>
             )}

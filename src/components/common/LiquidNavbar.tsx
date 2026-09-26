@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, User as UserIcon, Sparkles, Volume2, Shield, Compass, Lightbulb } from 'lucide-react';
+import { Search, User as UserIcon, Sparkles, Volume2, Shield, Compass, Lightbulb, Code2 } from 'lucide-react';
 import { User } from '../../types';
 
 interface LiquidNavbarProps {
@@ -12,6 +12,7 @@ interface LiquidNavbarProps {
   isPlayingAudio: boolean;
   onToggleAudioWidget: () => void;
   onOpenDesignPhilosophy?: () => void;
+  onOpenDevDocs?: () => void;
 }
 
 export const LiquidNavbar: React.FC<LiquidNavbarProps> = ({
@@ -22,7 +23,8 @@ export const LiquidNavbar: React.FC<LiquidNavbarProps> = ({
   onOpenSearch,
   isPlayingAudio,
   onToggleAudioWidget,
-  onOpenDesignPhilosophy
+  onOpenDesignPhilosophy,
+  onOpenDevDocs
 }) => {
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
@@ -106,6 +108,21 @@ export const LiquidNavbar: React.FC<LiquidNavbarProps> = ({
               <Lightbulb className="w-4 h-4 text-amber-500" />
               <span className="text-[11px] font-medium text-slate-700 hidden xl:inline">
                 设计重构论
+              </span>
+            </button>
+          )}
+
+          {/* Development & Deployment Docs Trigger */}
+          {onOpenDevDocs && (
+            <button
+              onClick={onOpenDevDocs}
+              className="p-2 text-slate-500 hover:text-sky-600 hover:bg-sky-50/80 rounded-xl transition-all active:scale-95 flex items-center gap-1.5"
+              title="全栈工程开发文档与商业生产部署规范"
+              aria-label="Developer Docs"
+            >
+              <Code2 className="w-4 h-4 text-sky-500" />
+              <span className="text-[11px] font-medium text-slate-700 hidden lg:inline">
+                开发文档
               </span>
             </button>
           )}
