@@ -1,11 +1,21 @@
-import { ArchiveContribution, ContributionSummary } from '../types';
+import { ArchiveContribution, ContributionSummary, User } from '../types';
+import { chronicleService } from './chronicleService';
 
-export const WEIGHT_ARCHIVE = 50; // 每补全一条档案 +50 贡献值
-export const WEIGHT_LIKE = 10;    // 每获得 1 个社区点赞 +10 贡献值
+// 用户定制的精准低比率权重体系：
+// 浏览千分之一 (0.001) · 点赞百分之一 (0.01) · 收藏百分之二 (0.02)
+export const WEIGHT_VIEW = 0.001;
+export const WEIGHT_LIKE = 0.01;
+export const WEIGHT_FAVORITE = 0.02;
+export const WEIGHT_ARCHIVE_BASE = 50;
+export const WEIGHT_ARCHIVE = 50;
+export const FORMULA_ARCHIVE_WEIGHT = 50;
+export const FORMULA_LIKE_WEIGHT = 0.01;
+export const WEIGHT_APPROVED_EDIT = 25; // 每篇被社区采纳的编年史/档案修改加 25 贡献声望
 
-// 用户定制的精准加权贡献度法则：贡献度 = (档案补全度 * 0.4) + (获得的被点赞总数 * 0.6)
-export const FORMULA_ARCHIVE_WEIGHT = 0.4;
-export const FORMULA_LIKE_WEIGHT = 0.6;
+// 晋升与撤职临界指标
+export const PROMOTION_REQUIRED_EDITS = 3;  // 成功被采纳的修改数量达到 3 篇
+export const PROMOTION_REQUIRED_SCORE = 80; // 综合贡献评分达到 80 分
+export const DEMOTION_DOWNVOTE_THRESHOLD = 5; // 如果作为管理员被👎超过 5 次，撤销管理员权限
 
 // Initial contributions spread across the past months
 export const initialContributions: ArchiveContribution[] = [
@@ -20,8 +30,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 12,
     status: 'approved',
     basePoints: 50,
-    likePoints: 120,
-    totalPoints: 170
+    likePoints: 1.2,
+    totalPoints: 51.2
   },
   {
     id: 'contrib_02',
@@ -34,8 +44,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 8,
     status: 'approved',
     basePoints: 50,
-    likePoints: 80,
-    totalPoints: 130
+    likePoints: 0.8,
+    totalPoints: 50.8
   },
   {
     id: 'contrib_03',
@@ -48,8 +58,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 24,
     status: 'approved',
     basePoints: 50,
-    likePoints: 240,
-    totalPoints: 290
+    likePoints: 2.4,
+    totalPoints: 52.4
   },
   {
     id: 'contrib_04',
@@ -62,8 +72,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 19,
     status: 'approved',
     basePoints: 50,
-    likePoints: 190,
-    totalPoints: 240
+    likePoints: 1.9,
+    totalPoints: 51.9
   },
   {
     id: 'contrib_05',
@@ -76,8 +86,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 31,
     status: 'approved',
     basePoints: 50,
-    likePoints: 310,
-    totalPoints: 360
+    likePoints: 3.1,
+    totalPoints: 53.1
   },
   {
     id: 'contrib_06',
@@ -90,8 +100,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 15,
     status: 'approved',
     basePoints: 50,
-    likePoints: 150,
-    totalPoints: 200
+    likePoints: 1.5,
+    totalPoints: 51.5
   },
   {
     id: 'contrib_07',
@@ -104,8 +114,8 @@ export const initialContributions: ArchiveContribution[] = [
     likes: 45,
     status: 'approved',
     basePoints: 50,
-    likePoints: 450,
-    totalPoints: 500
+    likePoints: 4.5,
+    totalPoints: 54.5
   }
 ];
 
@@ -132,21 +142,40 @@ export function saveContributions(list: ArchiveContribution[]) {
   }
 }
 
-export function calculateContributionSummary(list: ArchiveContribution[]): ContributionSummary {
+export function calculateContributionSummary(
+  list: ArchiveContribution[],
+  user?: User
+): ContributionSummary {
   const archiveCount = list.length;
   const totalLikesReceived = list.reduce((sum, item) => sum + item.likes, 0);
-  const totalPoints = list.reduce((sum, item) => sum + item.totalPoints, 0);
 
-  // 档案补全度 (百分比): 基于系统设定的 8 条核心维度考据基准 (人物、世界观、剧情、画集)
-  // 随着用户新增补全词条，补全度稳步攀升，最高达 100%
-  const archiveCompleteness = Math.min(100, Math.round((archiveCount / 8) * 100));
+  // 基础互动量基准 (模拟全站用户文章、日记与档案累计量)
+  const totalViewsReceived = 14850; // 累计浏览约 1.48 万次
+  const totalFavoritesReceived = 280; // 累计收藏约 280 次
 
-  // 核心计算公式：贡献度 = (档案补全度 * 0.4) + (获得的被点赞总数 * 0.6)
-  const archiveWeightedScore = Number((archiveCompleteness * FORMULA_ARCHIVE_WEIGHT).toFixed(1));
-  const likeWeightedScore = Number((totalLikesReceived * FORMULA_LIKE_WEIGHT).toFixed(1));
-  const formulaScore = Number((archiveWeightedScore + likeWeightedScore).toFixed(1));
+  // 计算精细加权分数 (千分之一 0.001, 百分之一 0.01, 百分之二 0.02)
+  const viewWeightedScore = Number((totalViewsReceived * WEIGHT_VIEW).toFixed(2)); // ~14.85 分
+  const likeWeightedScore = Number((totalLikesReceived * WEIGHT_LIKE).toFixed(2)); // ~1.54 分
+  const favoriteWeightedScore = Number((totalFavoritesReceived * WEIGHT_FAVORITE).toFixed(2)); // ~5.60 分
 
-  // Token 阶梯目标额度 (Token Quota & Usage UI 模式)
+  // 档案补全度 (百分比): 基于 8 条基准维度
+  const archiveCompleteness = Math.min(100, Math.round((archiveCount / 8) * 100)); // 88%
+  const archiveBaseScore = Number((archiveCompleteness * 0.4).toFixed(1)); // ~35.2 分
+
+  // 用户成功被采纳的编年史/档案修改数量 (从 ChronicleService 动态统计)
+  const comments = chronicleService.getComments();
+  const userApprovedProposals = comments.filter(
+    c => c.type === 'proposal' && c.userId === (user?.id || 'usr_me') && c.status === 'approved'
+  );
+  const approvedEditsCount = (user?.approvedModificationsCount ?? userApprovedProposals.length) + 2; // 已有底蕴2篇 + 动态采纳
+  const approvedEditsBonus = approvedEditsCount * WEIGHT_APPROVED_EDIT; // 每次被采纳奖励 25 分
+
+  // 综合贡献评分
+  const formulaScore = Number(
+    (archiveBaseScore + viewWeightedScore + likeWeightedScore + favoriteWeightedScore + approvedEditsBonus).toFixed(1)
+  );
+
+  // Token 阶梯目标额度
   let targetQuota = 200;
   if (formulaScore < 50) targetQuota = 50;
   else if (formulaScore < 100) targetQuota = 100;
@@ -155,6 +184,10 @@ export function calculateContributionSummary(list: ArchiveContribution[]): Contr
   else targetQuota = Math.ceil(formulaScore / 100) * 100 + 100;
 
   const quotaPercent = Math.min(100, Math.round((formulaScore / targetQuota) * 100));
+
+  // 是否满足免审直通管理员标准 (修改篇数 >= 3 且综合分 >= 80)
+  const canAutoPromoteToAdmin = approvedEditsCount >= PROMOTION_REQUIRED_EDITS && formulaScore >= PROMOTION_REQUIRED_SCORE;
+  const adminDownvotes = user?.adminDownvotesReceived || 0;
 
   // Level thresholds based on formulaScore
   let level = 1;
@@ -178,21 +211,27 @@ export function calculateContributionSummary(list: ArchiveContribution[]): Contr
   }
 
   return {
-    totalPoints,
+    totalPoints: Math.round(formulaScore * 10),
     archiveCount,
     totalLikesReceived,
+    totalViewsReceived,
+    totalFavoritesReceived,
     level,
     levelTitle,
     archiveCompleteness,
-    archiveFormulaWeight: FORMULA_ARCHIVE_WEIGHT,
-    likeFormulaWeight: FORMULA_LIKE_WEIGHT,
-    archiveWeightedScore,
+    viewWeight: WEIGHT_VIEW,
+    likeWeight: WEIGHT_LIKE,
+    favoriteWeight: WEIGHT_FAVORITE,
+    viewWeightedScore,
     likeWeightedScore,
+    favoriteWeightedScore,
+    approvedEditsBonus,
     formulaScore,
     targetQuota,
     quotaPercent,
-    archiveWeight: WEIGHT_ARCHIVE,
-    likeWeight: WEIGHT_LIKE
+    approvedEditsCount,
+    canAutoPromoteToAdmin,
+    adminDownvotes
   };
 }
 
@@ -212,9 +251,9 @@ export function addArchiveContribution(
     date: new Date().toISOString().split('T')[0],
     likes: 0,
     status: 'approved',
-    basePoints: WEIGHT_ARCHIVE,
+    basePoints: WEIGHT_ARCHIVE_BASE,
     likePoints: 0,
-    totalPoints: WEIGHT_ARCHIVE
+    totalPoints: WEIGHT_ARCHIVE_BASE
   };
 
   const updated = [newItem, ...current];
@@ -222,22 +261,37 @@ export function addArchiveContribution(
   return newItem;
 }
 
-export function likeContribution(id: string): ArchiveContribution[] {
+// Single-toggle like (prevents infinite liking!)
+export function toggleLikeContribution(id: string): {
+  updated: ArchiveContribution[];
+  isLiked: boolean;
+  item?: ArchiveContribution;
+} {
+  const { isLiked, change } = chronicleService.toggleLikeItem(`contrib_like_${id}`);
   const current = getStoredContributions();
+
+  let targetItem: ArchiveContribution | undefined;
   const updated = current.map(item => {
     if (item.id === id) {
-      const newLikes = item.likes + 1;
-      const likePts = newLikes * WEIGHT_LIKE;
-      return {
+      const newLikes = Math.max(0, item.likes + change);
+      const likePts = Number((newLikes * WEIGHT_LIKE).toFixed(2));
+      const mod = {
         ...item,
         likes: newLikes,
         likePoints: likePts,
         totalPoints: item.basePoints + likePts
       };
+      targetItem = mod;
+      return mod;
     }
     return item;
   });
 
   saveContributions(updated);
+  return { updated, isLiked, item: targetItem };
+}
+
+export function likeContribution(id: string): ArchiveContribution[] {
+  const { updated } = toggleLikeContribution(id);
   return updated;
 }

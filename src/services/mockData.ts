@@ -10,7 +10,8 @@ import {
   MerchItem,
   Diary,
   Post,
-  User
+  User,
+  Anime
 } from '../types';
 
 export const currentUser: User = {
@@ -165,34 +166,207 @@ export const oregairuCharacters: Character[] = [
   }
 ];
 
+export const animeListData: Anime[] = [
+  {
+    id: 'oregairu',
+    slug: 'oregairu',
+    title: '我的青春恋爱物语果然有问题。',
+    japaneseTitle: 'やはり俺の青春ラブコメはまちがっている。',
+    romaji: 'Yahari Ore no Seishun Love Come wa Machigatteiru.',
+    coverImage: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    year: '2013 - 2020',
+    author: '渡航 (Watari Wataru)',
+    description: '高中生比企谷八幡性格孤僻倔强，被生活指导老师平冢静强制带入“侍奉部”，与全校第一的美少女雪之下雪乃相遇。在解决形形色色的委托中，探寻不掺杂伪饰的“真物”。',
+    seasonsCount: 3,
+    episodesCount: 38,
+    status: 'completed'
+  },
+  {
+    id: 'hyouka',
+    slug: 'hyouka',
+    title: '冰菓 (古典部系列 · 扩展预备)',
+    japaneseTitle: '氷菓',
+    romaji: 'Hyouka',
+    coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+    year: '2012',
+    author: '米泽穗信',
+    description: '以神山高中古典部为舞台，“节能主义者”折木奉太郎与好奇心旺盛的千反田爱瑠共同揭开日常谜团。（支持未来多动漫统一架构接入）',
+    seasonsCount: 1,
+    episodesCount: 22,
+    status: 'completed'
+  }
+];
+
 export const characterRelations: CharacterRelation[] = [
   {
     id: 'rel_1',
     sourceId: 'char_yukino',
     targetId: 'char_hachiman',
     relationType: '真物寻求与恋人',
-    description: '从最初部室内的尖锐反驳，到看穿彼此伤痛，经历共依存的阵痛后最终坦露心意。'
+    description: '从最初部室内的尖锐反驳，到看穿彼此伤痛，经历共依存的阵痛后最终在天桥上坦露心意：“请把你的生命交给我”。',
+    keyEvents: [
+      '侍奉部初相遇：针锋相对的冰与刺 (S1E01)',
+      '文化祭自爆冲突：雪乃对八幡自毁手段的失望与痛心 (S1E12)',
+      '部室崩溃与“我想要真物”：八幡流泪告白，雪乃防线初破 (S2E08)',
+      '天桥终章告白：摒弃所有借口的真物誓言 (S3E11)',
+      '舞会重逢与咖啡店红茶：两人正式以恋人姿态相伴 (S3E12)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 针锋相对的观察期 (S1 前半)',
+        description: '互相认为对方性格恶劣，八幡讥讽雪乃的自命不凡，雪乃厌弃八幡的自甘堕落，但本质上都是孤身一人的异类。'
+      },
+      {
+        stage: '第 2 阶段 · 信任萌生与裂痕 (S1 终盘 ~ S2 前半)',
+        description: '通过解决由比滨、材木座及文化祭委托建立默契。然而八幡在修学旅行与文化祭的“伪恶自爆”深深伤害了雪乃。'
+      },
+      {
+        stage: '第 3 阶段 · 共依存的迷惘与质问 (S2 终盘 ~ S3 前半)',
+        description: '表面维持侍奉部的和睦，内心却充满猜忌与依赖。阳乃点破“共依存”本质，逼迫两人面对内心的软弱。'
+      },
+      {
+        stage: '第 4 阶段 · 彼此托付生命的真物 (S3 终盘)',
+        description: '八幡以舞会竞赛为借口执意介入雪乃的人生，天桥之上雪乃卸下全部防备，两人终于跨越自欺欺人，收获真正的羁绊。'
+      }
+    ],
+    relatedEpisodes: ['ep_1_01', 'ep_1_12', 'ep_2_08', 'ep_3_11', 'ep_3_12'],
+    relatedQuotes: ['quote_01', 'quote_02', 'quote_04'],
+    updatedAt: '2026-09-20'
   },
   {
     id: 'rel_2',
     sourceId: 'char_yukino',
     targetId: 'char_yui',
     relationType: '无可替代的挚友',
-    description: '雪乃生平第一个可以毫无防备呼唤名字、一同逛街制作甜点的挚友。'
+    description: '雪乃生平第一个可以毫无防备呼唤名字、一同逛街制作甜点的挚友。即使面临同样的心动，结衣依然选择守护三人的相聚。',
+    keyEvents: [
+      '焦黑饼干的制作委托 (S1E01)',
+      '由比滨生日礼物选购：雪乃首次体会为朋友挑选礼物的喜悦 (S1E07)',
+      '情人节巧克力手作与水族馆三人游 (S2E13)',
+      '结衣含泪退出与真挚祝福：永远是彼此最重要的朋友 (S3E11)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 拘谨的部员与部长',
+        description: '结衣小心翼翼地想要融入雪乃的世界，雪乃不习惯被如此热情而单纯的女孩接近。'
+      },
+      {
+        stage: '第 2 阶段 · 互换心事的真正密友',
+        description: '在结衣的主动与温暖融化下，雪乃第一次向同龄人倾吐孤单，并自然地称呼其为“结衣”。'
+      },
+      {
+        stage: '第 3 阶段 · 复杂却坦荡的青春羁绊',
+        description: '面对三角情感的终局，两人没有陷入背叛与虚伪，而是坦然拥抱彼此的眼泪与选择。'
+      }
+    ],
+    relatedEpisodes: ['ep_1_01', 'ep_2_13', 'ep_3_11'],
+    relatedQuotes: ['quote_01'],
+    updatedAt: '2026-09-18'
   },
   {
     id: 'rel_3',
     sourceId: 'char_yukino',
     targetId: 'char_haruno',
     relationType: '追逐与独立之茧',
-    description: '阳乃是雪乃童年时仰望的标杆，直至舞会企划中雪乃终于不再盲从姐姐的脚步。'
+    description: '阳乃是雪乃童年时仰望的标杆，直至舞会企划中雪乃终于不再盲从姐姐的脚步，找到自己的价值。',
+    keyEvents: [
+      '咖啡厅初会面：阳乃敏锐识破侍奉部三人的虚饰 (S1E08)',
+      '雪乃搬离公寓与家庭谈话 (S2E10)',
+      '共依存断言：残忍却精准的当头棒喝 (S3E04)',
+      '舞会成功后的释怀：姐姐眼中的赞许与妹妹的蜕变 (S3E12)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 盲目模仿与恐惧',
+        description: '雪乃努力考取与姐姐相同的学校，无论何时都在追赶姐姐的幻影，却总是被耀眼的阳乃甩在身后。'
+      },
+      {
+        stage: '第 2 阶段 · 幻灭与迷惘',
+        description: '意识到自己无论如何也无法成为“完美长女”，在阳乃的讽刺中陷入自我怀疑。'
+      },
+      {
+        stage: '第 3 阶段 · 走出阴影的独立',
+        description: '在八幡的陪伴下独立承担责任，终于能以平等的姿态与姐姐对坐交谈。'
+      }
+    ],
+    relatedEpisodes: ['ep_1_08', 'ep_2_10', 'ep_3_04', 'ep_3_12'],
+    relatedQuotes: ['quote_03'],
+    updatedAt: '2026-09-15'
   },
   {
     id: 'rel_4',
     sourceId: 'char_yukino',
     targetId: 'char_shizuka',
-    relationType: '引路恩师',
-    description: '平冢老师将八幡带至雪乃面前，亦在雪乃迷惘时给予最坚实大人的避风港。'
+    relationType: '引路恩师与精神依靠',
+    description: '平冢老师将八幡带至雪乃面前，亦在雪乃迷惘时给予最坚实大人的避风港，教会他们如何面对人生的伤痕。',
+    keyEvents: [
+      '侍奉部的创立引荐 (S1E01)',
+      '合宿篝火谈话：关于孤独与优秀者的重担 (S1E08)',
+      '千叶海湾兜风夜谈：平冢老师最后的点拨 (S3E08)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 严肃信赖的顾问与部长',
+        description: '平冢老师欣赏雪乃的正直与坚毅，但深知过度的孤傲会折断脆弱的羽翼。'
+      },
+      {
+        stage: '第 2 阶段 · 黑暗中的提灯长者',
+        description: '在三人关系濒临破裂的节点，用拉面、长谈与热忱为迷茫的孩子们指出真实的方向。'
+      }
+    ],
+    relatedEpisodes: ['ep_1_01', 'ep_1_08', 'ep_3_08'],
+    relatedQuotes: ['quote_02'],
+    updatedAt: '2026-09-12'
+  },
+  {
+    id: 'rel_5',
+    sourceId: 'char_hachiman',
+    targetId: 'char_yui',
+    relationType: '温柔的光与守护',
+    description: '由比滨给予了八幡高中生涯最初也是最纯粹的阳光，八幡自始至终想要保护由比滨那份不被世俗污染的真挚。',
+    keyEvents: [
+      '开学车祸救狗真相揭晓 (S1E05)',
+      '夏祭烟火大会的同行与距离感 (S1E09)',
+      '由比滨眼泪与三人共处的心愿 (S3E07)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 愧疚与误解',
+        description: '八幡以为由比滨的接近仅仅是因为车祸的同情与愧疚，刻意保持冷淡防备。'
+      },
+      {
+        stage: '第 2 阶段 · 珍视而小心的相伴',
+        description: '被由比滨的直率打动，将她视作不可失去的重要朋友。'
+      }
+    ],
+    relatedEpisodes: ['ep_1_05', 'ep_1_09', 'ep_3_07'],
+    relatedQuotes: ['quote_01'],
+    updatedAt: '2026-09-10'
+  },
+  {
+    id: 'rel_6',
+    sourceId: 'char_hachiman',
+    targetId: 'char_iroha',
+    relationType: '狡黠又依赖的前后辈',
+    description: '一色在八幡面前毫无包袱地展现心机与可爱，八幡数次为其出谋划策，成为一色最信赖的“后援智囊”。',
+    keyEvents: [
+      '学生会长选举委托：八幡劝诱一色参选 (S2E04)',
+      '圣诞联合活动：一色与八幡一同承受外界压力 (S2E07)',
+      '巧克力量产企划与由比滨雪乃的部室协作 (S2E11)'
+    ],
+    developmentStages: [
+      {
+        stage: '第 1 阶段 · 互相算计与麻烦制造机',
+        description: '一色不想当会长却又在乎面子，八幡用独特的反套路逻辑说服其上任。'
+      },
+      {
+        stage: '第 2 阶段 · 习惯性撒娇与心扉敞开',
+        description: '“难不成你在追求我吗？”成为两人默契的暗号，一色将八幡视作无所不能的前辈。'
+      }
+    ],
+    relatedEpisodes: ['ep_2_04', 'ep_2_07', 'ep_2_11'],
+    relatedQuotes: ['quote_03'],
+    updatedAt: '2026-09-08'
   }
 ];
 

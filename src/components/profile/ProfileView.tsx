@@ -12,6 +12,7 @@ import {
   getStoredContributions, calculateContributionSummary, addArchiveContribution, 
   likeContribution, WEIGHT_ARCHIVE, WEIGHT_LIKE, FORMULA_ARCHIVE_WEIGHT, FORMULA_LIKE_WEIGHT
 } from '../../services/contributionService';
+import { api } from '../../services/api';
 
 interface ProfileViewProps {
   user: User;
@@ -19,6 +20,7 @@ interface ProfileViewProps {
   toSignRequests: ToSignRequest[];
   bookmarkedPosts: Post[];
   onApplyCoser: (cn: string, bio: string, links: string[]) => void;
+  onApproveToSign?: (id: string, params: { coserCN: string; coserNote: string; inkColor: string }) => void;
   coserCert?: CoserCertification;
 }
 
@@ -28,6 +30,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   toSignRequests,
   bookmarkedPosts,
   onApplyCoser,
+  onApproveToSign,
   coserCert
 }) => {
   const [activeTab, setActiveTab] = useState<'contributions' | 'tosign' | 'favorites' | 'coser_cert' | 'settings'>('contributions');
@@ -35,6 +38,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [coserBio, setCoserBio] = useState('长期专注于雪之下雪乃角色出片，曾参展千叶动漫嘉年华。');
   const [portfolioLink, setPortfolioLink] = useState('https://weibo.com/p/my_portfolio');
   const [applySuccess, setApplySuccess] = useState(false);
+
+  // Coser To-Sign Signing Workflow States
+  const [localToSignList, setLocalToSignList] = useState<ToSignRequest[]>(toSignRequests);
+  const [signingRequest, setSigningRequest] = useState<ToSignRequest | null>(null);
+  const [signingNote, setSigningNote] = useState('');
+  const [signingInk, setSigningInk] = useState('#ec4899');
+  const [permissionAlert, setPermissionAlert] = useState<string | null>(null);
 
   // Contributions State & Computation
   const [contributions, setContributions] = useState<ArchiveContribution[]>(() => getStoredContributions());
@@ -45,8 +55,47 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const contributionSummary = useMemo(() => {
-    return calculateContributionSummary(contributions);
-  }, [contributions]);
+    return calculateContributionSummary(contributions, user);
+  }, [contributions, user]);
+
+  const handleStartSign = (req: ToSignRequest) => {
+    if (!user.isCoser && user.role !== 'ROLE_COSER') {
+      setPermissionAlert('权限受限：普通用户可申请成为社区管理员，但 To 签的批准与签署由通过 Coser 认证后的本人专属处理！管理员或普通成员无权代签。');
+      return;
+    }
+    setSigningRequest(req);
+    setSigningNote(`致 ${req.requesterCN}：愿真实的微风吹散严寒，真物常驻你的身旁！—— Coser ${user.coserCN || user.nickname}`);
+    setSigningInk(req.inkColor || '#ec4899');
+  };
+
+  const handleConfirmSign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signingRequest) return;
+    const res = api.approveToSignByCoser(signingRequest.id, {
+      coserCN: user.coserCN || user.nickname,
+      coserNote: signingNote.trim(),
+      inkColor: signingInk
+    });
+    if (res.success) {
+      setLocalToSignList(res.requests);
+      onApproveToSign?.(signingRequest.id, {
+        coserCN: user.coserCN || user.nickname,
+        coserNote: signingNote.trim(),
+        inkColor: signingInk
+      });
+      setSigningRequest(null);
+    }
+  };
+
+  const handleAutoPromoteToAdmin = () => {
+    const updated = api.promoteUserToAdmin('content_admin');
+    onUpdateUser(updated);
+  };
+
+  const handleSimulateDemotionVote = () => {
+    const res = api.demoteAdminIfDownvoted();
+    onUpdateUser(res.user);
+  };
 
   const contributionActivityItems = useMemo<ActivityMatrixItem[]>(() => {
     return contributions.map(c => ({
@@ -112,21 +161,30 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <h2 className="text-xl font-bold text-slate-900 font-editorial-mincho">
               {user.nickname}
             </h2>
-            <div className="flex items-center gap-1.5 justify-center sm:justify-start">
-              {user.isCoser ? (
-                <span className="text-[10px] font-mono font-semibold bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">
-                  认证 COSER ({user.coserCN})
+            <div className="flex items-center gap-1.5 justify-center sm:justify-start flex-wrap">
+              {user.isCoser || user.role === 'ROLE_COSER' ? (
+                <span className="text-[10px] font-mono font-semibold bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full border border-pink-200">
+                  🌸 认证 COSER ({user.coserCN || '浅羽由乃'}) · 具备To签签署权
+                </span>
+              ) : null}
+              {user.role === 'ROLE_DEVELOPER' ? (
+                <span className="text-[10px] font-mono font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+                  ⚡ 开发者管理员 (最高权限)
+                </span>
+              ) : user.role === 'ROLE_CONTENT_ADMIN' || user.role === 'ROLE_ADMIN' ? (
+                <span className="text-[10px] font-mono font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                  🛡️ 社区内容管理员 (免审直编)
                 </span>
               ) : (
                 <span className="text-[10px] font-mono font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-                  侍奉部部员
+                  👤 普通成员
                 </span>
               )}
-              {user.role === 'ROLE_ADMIN' && (
-                <span className="text-[10px] font-mono font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                  系统管理员
+              {user.adminDownvotesReceived ? (
+                <span className="text-[10px] font-mono bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full font-bold">
+                  👎 社区反对: {user.adminDownvotesReceived}/5 {user.adminRevoked ? '(已撤销管理员)' : ''}
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -137,21 +195,66 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="text-xs text-slate-400 font-mono pt-1">
             <span>注册邮箱: {user.email}</span>
             <span className="mx-2">·</span>
-            <span>入站时间: {user.createdAt}</span>
+            <span>已采纳修改: {user.approvedModificationsCount || 2} 篇</span>
           </div>
         </div>
 
-        {/* Quick Role Tester Toggle */}
-        <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-center sm:text-right shrink-0">
-          <span className="text-[10px] text-slate-400 font-mono block mb-1">测试权限切换</span>
-          <button
-            onClick={() => onUpdateUser({ 
-              role: user.role === 'ROLE_ADMIN' ? 'ROLE_USER' : 'ROLE_ADMIN' 
-            })}
-            className="px-2.5 py-1 rounded-lg text-xs font-mono bg-white border border-slate-200 hover:bg-slate-100"
-          >
-            {user.role === 'ROLE_ADMIN' ? '切换为普通用户' : '切换为管理员 (Admin)'}
-          </button>
+        {/* Quick Role Tester & Demotion Simulator */}
+        <div className="p-3 rounded-2xl bg-slate-50/90 border border-slate-200 text-left shrink-0 space-y-2">
+          <span className="text-[10px] text-slate-500 font-mono font-bold block">
+            三层角色与Coser权限切换测试
+          </span>
+          <div className="flex flex-col gap-1.5 text-xs">
+            <div className="flex flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => onUpdateUser({ role: 'ROLE_DEVELOPER', adminTier: 'developer', isCoser: false })}
+                className={`px-2 py-0.5 rounded-lg font-mono text-[11px] transition-all ${
+                  user.role === 'ROLE_DEVELOPER' ? 'bg-purple-600 text-white font-bold' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                开发者超管
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateUser({ role: 'ROLE_CONTENT_ADMIN', adminTier: 'content_admin', isCoser: false })}
+                className={`px-2 py-0.5 rounded-lg font-mono text-[11px] transition-all ${
+                  user.role === 'ROLE_CONTENT_ADMIN' || user.role === 'ROLE_ADMIN' ? 'bg-amber-600 text-white font-bold' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                内容管理员
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateUser({ role: 'ROLE_USER', adminTier: 'member', isCoser: false })}
+                className={`px-2 py-0.5 rounded-lg font-mono text-[11px] transition-all ${
+                  user.role === 'ROLE_USER' && !user.isCoser ? 'bg-slate-700 text-white font-bold' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                普通成员
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateUser({ role: 'ROLE_COSER', isCoser: true, coserCN: '浅羽由乃' })}
+                className={`px-2 py-0.5 rounded-lg font-mono text-[11px] transition-all ${
+                  user.isCoser || user.role === 'ROLE_COSER' ? 'bg-pink-600 text-white font-bold' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                认证Coser
+              </button>
+            </div>
+
+            {/* Demotion Simulation Button */}
+            {(user.role === 'ROLE_CONTENT_ADMIN' || user.role === 'ROLE_ADMIN') && (
+              <button
+                type="button"
+                onClick={handleSimulateDemotionVote}
+                className="w-full text-center px-2 py-1 rounded-lg text-[10px] font-mono bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors"
+              >
+                👎 模拟收到社区反对 (累计5次撤销权限)
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -312,25 +415,78 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4 focus-dim-group"
           >
-            {toSignRequests.length === 0 ? (
+            {/* Permission & Logic Rule Explanation Banner */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50 via-sky-50 to-white border border-pink-200/80 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-xl bg-pink-500 text-white shadow-xs">
+                    <Sparkles className="w-4 h-4" />
+                  </span>
+                  <span className="text-xs font-bold text-slate-900 font-editorial-mincho">
+                    To 签专属业务与权限体系
+                  </span>
+                </div>
+
+                {user.isCoser || user.role === 'ROLE_COSER' ? (
+                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-pink-600 text-white font-bold shadow-xs">
+                    🌸 认证 Coser 专属审批模式激活
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                    普通用户 / 管理员查阅视角
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed font-light">
+                <strong>业务规则说明：</strong>普通用户可以申请成为管理员，但是 <strong>To 签的批准由 Coser 认证后的 Coser 专属处理</strong>。写真 To 签属于博主本人的手写授权寄语，管理员与普通用户无权代签。
+              </p>
+            </div>
+
+            {/* Permission Alert Toast */}
+            <AnimatePresence>
+              {permissionAlert && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{permissionAlert}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPermissionAlert(null);
+                      onUpdateUser({ isCoser: true, role: 'ROLE_COSER', coserCN: '浅羽由乃' });
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-rose-600 text-white font-medium text-[11px] hover:bg-rose-700 shrink-0 ml-2"
+                  >
+                    切换为 Coser
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {localToSignList.length === 0 ? (
               <EmptyState
                 type="favorites"
                 customTitle="暂无 To 签申请记录"
                 customSubtitle="在图库或社区中找到心仪的 Coser 作品，点击「申请 To 签」即可开启定制。"
               />
             ) : (
-              toSignRequests.map((req, rIdx) => (
+              localToSignList.map((req, rIdx) => (
                 <motion.div
                   key={req.id}
                   whileHover={{ 
-                    y: -6, 
-                    scale: 1.015, 
-                    rotateZ: rIdx % 2 === 0 ? [-0.2, 0.3, -0.15, 0] : [0.2, -0.3, 0.15, 0],
-                    transition: { rotateZ: { duration: 0.6 }, type: 'spring', stiffness: 350, damping: 20 }
+                    y: -4, 
+                    scale: 1.01,
+                    transition: { type: 'spring', stiffness: 350, damping: 20 }
                   }}
-                  className="focus-card-item rounded-3xl p-5 sm:p-6 liquid-glass border border-white/95 shadow-sm hover:shadow-[0_24px_50px_-15px_rgba(2,132,199,0.25)] hover:border-sky-300 transition-all flex flex-col sm:flex-row gap-5 items-start relative z-10"
+                  className="focus-card-item rounded-3xl p-5 sm:p-6 liquid-glass border border-white/95 shadow-sm hover:shadow-md hover:border-pink-300 transition-all flex flex-col sm:flex-row gap-5 items-start relative z-10"
                 >
-                  <div className="w-full sm:w-40 aspect-[4/3] rounded-2xl overflow-hidden shadow-sm shrink-0 border border-white relative">
+                  <div className="w-full sm:w-40 aspect-[4/3] rounded-2xl overflow-hidden shadow-sm shrink-0 border border-white relative bg-slate-100">
                     <img
                       src={req.imageUrl}
                       alt={req.galleryTitle}
@@ -342,37 +498,185 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         top: `${req.positionY}%`,
                         color: req.inkColor 
                       }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 bg-black/60 px-1 py-0.5 rounded text-[8px] font-bold"
+                      className="absolute -translate-x-1/2 -translate-y-1/2 bg-black/70 px-1.5 py-0.5 rounded text-[8px] font-bold text-white shadow-xs"
                     >
                       手写印记
                     </div>
                   </div>
 
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-3 flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 font-editorial-mincho">
+                      <span className="text-sm font-bold text-slate-900 font-editorial-mincho">
                         {req.galleryTitle}
                       </span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold ${
-                        req.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold ${
+                        req.status === 'approved' 
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                          : 'bg-amber-100 text-amber-800 border border-amber-200'
                       }`}>
-                        {req.status === 'approved' ? '已完成签署' : '待 Coser 签署'}
+                        {req.status === 'approved' ? '✓ Coser 已亲笔签署发放' : '⏳ 待认证 Coser 审批'}
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 text-xs font-editorial-mincho text-slate-800">
+                    <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100 text-xs font-editorial-mincho text-slate-800">
+                      <span className="text-slate-400 block text-[10px] mb-0.5">粉丝寄语 / 期望题字：</span>
                       {req.dedicationText}
                     </div>
 
-                    <div className="text-[11px] text-slate-400 space-y-0.5">
-                      <div>受签 CN：<span className="text-slate-700">{req.requesterCN}</span></div>
-                      <div>附言备注：<span className="text-slate-700">{req.remarks || '无'}</span></div>
-                      <div>递交日期：<span className="font-mono">{req.createdAt}</span></div>
+                    {/* If signed by Coser, display calligraphy note & signature stamp */}
+                    {req.status === 'approved' && (
+                      <div className="p-3 rounded-xl bg-pink-50/60 border border-pink-200 text-xs space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-mono text-pink-700 font-bold">
+                          <span>🌸 Coser 亲手签署寄语：</span>
+                          <span>签署人: {req.approvedByCoserCN || '浅羽由乃'}</span>
+                        </div>
+                        <div className="font-editorial-mincho text-slate-800 pl-1">
+                          「{req.coserNote || '愿真实的微风吹散严寒，真物常驻你的身旁！'}」
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-400 text-right">
+                          签署日期: {req.signedAt || req.createdAt}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                      <div className="space-x-3">
+                        <span>受签 CN：<strong className="text-slate-700">{req.requesterCN}</strong></span>
+                        <span>递交日期：<span className="font-mono">{req.createdAt}</span></span>
+                      </div>
+
+                      {/* Approval Action Button */}
+                      {req.status !== 'approved' && (
+                        <div>
+                          {user.isCoser || user.role === 'ROLE_COSER' ? (
+                            <button
+                              onClick={() => handleStartSign(req)}
+                              className="px-3.5 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                            >
+                              <PenTool className="w-3.5 h-3.5" />
+                              <span>批准并手写签署</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleStartSign(req)}
+                              className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium text-xs flex items-center gap-1 transition-colors"
+                              title="点击查看权限提示"
+                            >
+                              <span>🔒 仅限认证 Coser 签批</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               ))
             )}
+
+            {/* Coser Signing Dialog */}
+            <AnimatePresence>
+              {signingRequest && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+                  <motion.form
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    onSubmit={handleConfirmSign}
+                    className="w-full max-w-lg bg-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/90 space-y-4 relative"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSigningRequest(null)}
+                      className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+
+                    <div className="flex items-center gap-2 text-pink-600 font-bold text-sm">
+                      <Sparkles className="w-4 h-4" />
+                      <span>Coser 专属手写签署工作台</span>
+                    </div>
+
+                    <div className="aspect-[16/9] rounded-2xl overflow-hidden relative shadow-sm border border-slate-200">
+                      <img
+                        src={signingRequest.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                      <div
+                        style={{
+                          left: `${signingRequest.positionX}%`,
+                          top: `${signingRequest.positionY}%`,
+                          color: signingInk
+                        }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 bg-black/75 px-2 py-1 rounded-md text-[10px] font-bold text-white shadow-lg border border-white/20"
+                      >
+                        ✍️ {user.coserCN || user.nickname} 亲笔印记
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-800 block mb-1">
+                        Coser 手写寄语与签名留言
+                      </label>
+                      <textarea
+                        value={signingNote}
+                        onChange={(e) => setSigningNote(e.target.value)}
+                        rows={2}
+                        className="w-full p-2.5 rounded-xl border border-pink-200 text-xs focus:outline-none focus:ring-2 focus:ring-pink-400 font-editorial-mincho"
+                        placeholder="给粉丝的手写寄语..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-800 block mb-1">
+                        签名印记墨水颜色
+                      </label>
+                      <div className="flex gap-2">
+                        {[
+                          { color: '#ec4899', label: '樱花粉' },
+                          { color: '#eab308', label: '金墨' },
+                          { color: '#0284c7', label: '冰蓝' },
+                          { color: '#1e293b', label: '沉黑' }
+                        ].map((ink) => (
+                          <button
+                            key={ink.color}
+                            type="button"
+                            onClick={() => setSigningInk(ink.color)}
+                            className={`px-3 py-1 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition-all ${
+                              signingInk === ink.color
+                                ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold'
+                                : 'border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: ink.color }} />
+                            <span>{ink.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setSigningRequest(null)}
+                        className="px-4 py-2 rounded-xl text-xs text-slate-500 hover:bg-slate-100"
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>确认签署并盖印发放</span>
+                      </button>
+                    </div>
+                  </motion.form>
+                </div>
+              )}
+            </AnimatePresence>
+
           </motion.div>
         )}
 

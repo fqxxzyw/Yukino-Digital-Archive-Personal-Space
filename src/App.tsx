@@ -8,7 +8,8 @@ import {
   Diary, 
   Post, 
   ChatMessage, 
-  CoserCertification 
+  CoserCertification,
+  Episode
 } from './types';
 
 // Common Components
@@ -19,7 +20,7 @@ import { ImageLightbox } from './components/common/ImageLightbox';
 
 // View Modules
 import { HomeView } from './components/home/HomeView';
-import { YukinoArchiveView } from './components/yukino/YukinoArchiveView';
+import { CharacterArchivePage } from './components/character/CharacterArchivePage';
 import { OregairuView } from './components/oregairu/OregairuView';
 import { GalleryView } from './components/gallery/GalleryView';
 import { FeedView } from './components/community/FeedView';
@@ -27,6 +28,7 @@ import { DiaryView } from './components/diary/DiaryView';
 import { ChatRoomView } from './components/chat/ChatRoomView';
 import { ProfileView } from './components/profile/ProfileView';
 import { AdminView } from './components/admin/AdminView';
+import { CHARACTER_ID_TO_SLUG, CHARACTER_SLUG_MAP } from './services/chronicleService';
 
 // Modals
 import { ToSignModal } from './components/tosign/ToSignModal';
@@ -39,6 +41,7 @@ import { SnowfallCanvas } from './components/common/SnowfallCanvas';
 export default function App() {
   // Navigation State
   const [currentTab, setCurrentTab] = useState<string>('home');
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>('char_yukino');
 
   // Core Data State
   const [user, setUser] = useState<User>(api.getUser());
@@ -53,7 +56,7 @@ export default function App() {
   const yukino = api.getCharacterById('char_yukino')!;
   const characters = api.getCharacters();
   const seasons = api.getSeasons();
-  const episodes = api.getEpisodes();
+  const [episodes, setEpisodes] = useState<Episode[]>(() => api.getEpisodes());
   const outfits = api.getOutfits();
   const quotes = api.getQuotes();
   const voiceLines = api.getVoiceLines();
@@ -90,6 +93,59 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
+  // Hash-based URL Routing & Deep Linking (/anime/oregairu/characters/:characterSlug)
+  const handleNavigateToCharacter = (charId: string) => {
+    setSelectedCharacterId(charId);
+    setCurrentTab('character_archive');
+    const slug = CHARACTER_ID_TO_SLUG[charId] || charId;
+    window.location.hash = `/anime/oregairu/characters/${slug}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectTab = (tab: string) => {
+    if (tab === 'yukino') {
+      setSelectedCharacterId('char_yukino');
+      setCurrentTab('character_archive');
+      window.location.hash = '/anime/oregairu/characters/yukino-yukinoshita';
+    } else {
+      setCurrentTab(tab);
+      if (tab === 'oregairu') {
+        window.location.hash = '/anime/oregairu';
+      } else {
+        window.location.hash = `/${tab}`;
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const syncRouteFromHash = () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash.startsWith('/anime/oregairu/characters/')) {
+        const slug = hash.replace('/anime/oregairu/characters/', '');
+        const targetId = CHARACTER_SLUG_MAP[slug] || slug;
+        if (targetId) {
+          setSelectedCharacterId(targetId);
+          setCurrentTab('character_archive');
+        }
+      } else if (hash === '/anime/oregairu' || hash === '/oregairu') {
+        setCurrentTab('oregairu');
+      } else if (hash === '/yukino') {
+        setSelectedCharacterId('char_yukino');
+        setCurrentTab('character_archive');
+      } else if (hash.startsWith('/')) {
+        const tab = hash.replace('/', '');
+        if (['home', 'oregairu', 'gallery', 'feed', 'diary', 'chat', 'profile', 'admin'].includes(tab)) {
+          setCurrentTab(tab);
+        }
+      }
+    };
+
+    syncRouteFromHash();
+    window.addEventListener('hashchange', syncRouteFromHash);
+    return () => window.removeEventListener('hashchange', syncRouteFromHash);
+  }, []);
+
   // Handlers
   const handleUpdateUser = (updatedFields: Partial<User>) => {
     const updated = api.updateUser(updatedFields);
@@ -97,10 +153,10 @@ export default function App() {
   };
 
   const handleLikeGalleryItem = (id: string) => {
-    const updated = api.likeGalleryItem(id);
-    setGalleryItems(updated);
+    const result = api.likeGalleryItem(id);
+    setGalleryItems(result.items);
     if (lightboxItem?.id === id) {
-      setLightboxItem(updated.find(i => i.id === id) || null);
+      setLightboxItem(result.items.find(i => i.id === id) || null);
     }
   };
 
@@ -238,10 +294,7 @@ export default function App() {
       {/* 1. Liquid Glass Top Navbar (3-zone Top Bar Contract) */}
       <LiquidNavbar
         currentTab={currentTab}
-        onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectTab={handleSelectTab}
         user={user}
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
@@ -255,7 +308,7 @@ export default function App() {
       <main className="flex-1 w-full max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentTab}
+            key={currentTab === 'character_archive' ? `character_${selectedCharacterId}` : currentTab}
             initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -10, filter: 'blur(3px)' }}
@@ -266,10 +319,8 @@ export default function App() {
           >
             {currentTab === 'home' && (
               <HomeView
-                onNavigate={(tab) => {
-                  setCurrentTab(tab);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                onNavigate={handleSelectTab}
+                onNavigateToCharacter={handleNavigateToCharacter}
                 yukino={yukino}
                 characters={characters}
                 recentDiaries={diaries}
@@ -283,16 +334,27 @@ export default function App() {
               />
             )}
 
-            {currentTab === 'yukino' && (
-              <YukinoArchiveView
-                yukino={yukino}
+            {(currentTab === 'yukino' || currentTab === 'character_archive') && (
+              <CharacterArchivePage
+                characterId={currentTab === 'yukino' ? 'char_yukino' : selectedCharacterId}
+                characters={characters}
                 seasons={seasons}
                 episodes={episodes}
                 outfits={outfits}
                 quotes={quotes}
                 voiceLines={voiceLines}
                 merch={merch}
+                currentUser={user}
+                onNavigateToCharacter={handleNavigateToCharacter}
+                onBackToCharacterList={() => {
+                  setCurrentTab('oregairu');
+                  window.location.hash = '/anime/oregairu';
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 onPlayVoice={handlePlayVoiceTrack}
+                onUpdateEpisode={(updated) => {
+                  setEpisodes(prev => prev.map(e => e.id === updated.id ? updated : e));
+                }}
               />
             )}
 
@@ -301,6 +363,11 @@ export default function App() {
                 characters={characters}
                 seasons={seasons}
                 episodes={episodes}
+                currentUser={user}
+                onNavigateToCharacter={handleNavigateToCharacter}
+                onUpdateEpisode={(updated) => {
+                  setEpisodes(prev => prev.map(e => e.id === updated.id ? updated : e));
+                }}
               />
             )}
 
@@ -352,6 +419,9 @@ export default function App() {
                 toSignRequests={toSignRequests}
                 bookmarkedPosts={posts.filter(p => p.bookmarked)}
                 onApplyCoser={handleApplyCoser}
+                onApproveToSign={() => {
+                  setToSignRequests(api.getToSignRequests());
+                }}
                 coserCert={coserCerts.find(c => c.userId === user.id)}
               />
             )}
@@ -442,10 +512,7 @@ export default function App() {
       {/* 8. Mobile Safe-Area Floating Bottom Dock Bar */}
       <FloatingTabBar
         currentTab={currentTab}
-        onSelectTab={(tab) => {
-          setCurrentTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectTab={handleSelectTab}
       />
 
       {/* 9. Minimalist Apple-style Editorial Footer */}

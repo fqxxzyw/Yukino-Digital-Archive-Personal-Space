@@ -23,7 +23,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({ currentTab, onSe
       <div className="max-w-md mx-auto pointer-events-auto apple-glass-floating border border-white/95 rounded-2xl shadow-[0_12px_36px_rgba(3,105,161,0.14)] p-1.5 flex items-center justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = currentTab === tab.id;
+          const isActive = currentTab === tab.id || (tab.id === 'yukino' && currentTab === 'character_archive');
           return (
             <button
               key={tab.id}

@@ -59,7 +59,7 @@ export const LiquidNavbar: React.FC<LiquidNavbarProps> = ({
         {/* Zone 2: 4-7 clean single-line nav links with shared sliding liquid indicator */}
         <nav className="hidden md:flex items-center gap-1 relative p-1 rounded-xl bg-slate-100/50 border border-slate-200/40">
           {navLinks.map((link) => {
-            const isActive = currentTab === link.id;
+            const isActive = currentTab === link.id || (link.id === 'yukino' && currentTab === 'character_archive');
             return (
               <motion.button
                 key={link.id}

@@ -14,8 +14,11 @@ import {
   Calendar,
   Layers,
   ArrowRight,
-  X
+  X,
+  MessageSquare,
+  History
 } from 'lucide-react';
+import { ItemDiscussionDrawer } from '../common/ItemDiscussionDrawer';
 
 import { 
   Character, 
@@ -24,8 +27,12 @@ import {
   Outfit, 
   Quote, 
   VoiceLine, 
-  MerchItem 
+  MerchItem,
+  User 
 } from '../../types';
+import { ChronicleCommentThread } from './ChronicleCommentThread';
+import { Shield, FileEdit, CheckCircle2 } from 'lucide-react';
+import { chronicleService } from '../../services/chronicleService';
 
 interface YukinoArchiveViewProps {
   yukino: Character;
@@ -35,24 +42,79 @@ interface YukinoArchiveViewProps {
   quotes: Quote[];
   voiceLines: VoiceLine[];
   merch: MerchItem[];
+  currentUser: User;
   onPlayVoice: (index: number) => void;
   onNavigateToEpisode?: (epId: string) => void;
+  onUpdateEpisode?: (ep: Episode) => void;
+  onUserUpdated?: (user: User) => void;
 }
 
 export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
   yukino,
   seasons,
-  episodes,
+  episodes: initialEpisodes,
   outfits,
   quotes,
   voiceLines,
   merch,
-  onPlayVoice
+  currentUser,
+  onPlayVoice,
+  onUpdateEpisode,
+  onUserUpdated
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'timeline' | 'outfits' | 'quotes' | 'voices' | 'merch'>('profile');
   const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
+
+  // Local state of episodes to dynamically re-render when edited
+  const [episodesList, setEpisodesList] = useState<Episode[]>(initialEpisodes);
+  const [yukinoGrowthText, setYukinoGrowthText] = useState('从第一季中坚信“优秀者背负义务”的孤高清冷，到第二季中面对学生会选举和共依存困境时的迷惘无助，再到第三季中独立承办舞会企划并勇敢对八幡袒露内心：“请把你的生命交给我”。雪之下雪乃的魅力不仅在于她的聪慧与冷艳，更在于那份追求真实哪怕遍体鳞伤的极致纯粹。');
+
+  // Item Discussion & Proposal Drawer State
+  const [drawerTarget, setDrawerTarget] = useState<{
+    targetId: string;
+    targetType: 'episode' | 'timeline' | 'quote' | 'outfit' | 'character';
+    targetTitle: string;
+    currentContent: string;
+  } | null>(null);
+
+  // Admin Direct Edit State
+  const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null);
+  const [directTitle, setDirectTitle] = useState('');
+  const [directSynopsis, setDirectSynopsis] = useState('');
+  const [directFeedback, setDirectFeedback] = useState<string | null>(null);
+
+  const handleEpisodeUpdated = (updatedEp: Episode) => {
+    setEpisodesList(prev => prev.map(e => e.id === updatedEp.id ? updatedEp : e));
+    onUpdateEpisode?.(updatedEp);
+  };
+
+  const handleOpenDirectEdit = (ep: Episode) => {
+    setEditingEpisode(ep);
+    setDirectTitle(ep.title);
+    setDirectSynopsis(ep.synopsis);
+  };
+
+  const handleSaveDirectEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEpisode) return;
+
+    const updatedEpisodes = chronicleService.adminDirectEditEpisode(editingEpisode.id, {
+      title: directTitle.trim(),
+      synopsis: directSynopsis.trim()
+    });
+
+    const updatedTarget = updatedEpisodes.find(e => e.id === editingEpisode.id);
+    if (updatedTarget) {
+      handleEpisodeUpdated(updatedTarget);
+    }
+    setDirectFeedback('⚡ 管理员免审直编已实时入库保存！');
+    setTimeout(() => {
+      setDirectFeedback(null);
+      setEditingEpisode(null);
+    }, 1200);
+  };
 
   const subTabs = [
     { id: 'profile', label: '角色总览', icon: BookOpen },
@@ -63,7 +125,7 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
     { id: 'merch', label: '典藏周边', icon: ShoppingBag }
   ];
 
-  const filteredEpisodes = episodes.filter(ep => ep.seasonId === selectedSeason);
+  const filteredEpisodes = episodesList.filter(ep => ep.seasonId === selectedSeason);
 
   return (
     <div className="space-y-12 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -226,11 +288,25 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
 
             {/* In-depth Character Lore Banner */}
             <div className="rounded-3xl p-8 liquid-glass border border-white/90 shadow-sm space-y-4">
-              <h3 className="text-lg font-bold text-slate-900 font-editorial-mincho">
-                人物成长与心路历程
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
-                从第一季中坚信“优秀者背负义务”的孤高清冷，到第二季中面对学生会选举和共依存困境时的迷惘无助，再到第三季中独立承办舞会企划并勇敢对八幡袒露内心：“请把你的生命交给我”。雪之下雪乃的魅力不仅在于她的聪慧与冷艳，更在于那份追求真实哪怕遍体鳞伤的极致纯粹。
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-slate-900 font-editorial-mincho">
+                  人物成长与心路历程
+                </h3>
+                <button
+                  onClick={() => setDrawerTarget({
+                    targetId: 'char_yukino_growth',
+                    targetType: 'character',
+                    targetTitle: '雪之下雪乃 · 人物成长与心路历程',
+                    currentContent: yukinoGrowthText
+                  })}
+                  className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs font-medium flex items-center gap-1.5 transition-colors border border-sky-200 self-start sm:self-auto"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>讨论与申请修改感悟</span>
+                </button>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light font-editorial-mincho">
+                {yukinoGrowthText}
               </p>
             </div>
           </motion.div>
@@ -278,10 +354,25 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
                   </div>
 
                   <div className="space-y-2.5 flex-1">
-                    <div className="flex items-center gap-2 text-xs font-mono text-sky-600">
-                      <span>SEASON {ep.seasonId}</span>
-                      <span>·</span>
-                      <span>EPISODE {ep.episodeNumber}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-mono text-sky-600 font-semibold">
+                        <span>SEASON {ep.seasonId}</span>
+                        <span>·</span>
+                        <span>EPISODE {ep.episodeNumber}</span>
+                      </div>
+
+                      <button
+                        onClick={() => setDrawerTarget({
+                          targetId: ep.id,
+                          targetType: 'episode',
+                          targetTitle: `第${ep.episodeNumber}话 · ${ep.title}`,
+                          currentContent: ep.synopsis
+                        })}
+                        className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 text-xs font-medium flex items-center gap-1 shadow-2xs transition-colors"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
+                        <span>评论 / 申请修改</span>
+                      </button>
                     </div>
 
                     <h4 className="text-base font-bold text-slate-900 font-editorial-mincho">
@@ -295,7 +386,7 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
                       {ep.synopsis}
                     </p>
 
-                    <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                    <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-slate-500 border-t border-slate-100">
                       <span className="font-medium text-slate-700">登场角色：</span>
                       {ep.charactersInvolved.join(' · ')}
                     </div>
@@ -359,7 +450,24 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-sky-600 font-medium">
                     <span>首次登场: {outfit.firstAppearance.slice(0, 7)}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDrawerTarget({
+                            targetId: outfit.id,
+                            targetType: 'outfit',
+                            targetTitle: `代表服饰 · ${outfit.name}`,
+                            currentContent: outfit.description
+                          });
+                        }}
+                        className="px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>讨论/修改</span>
+                      </button>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -462,7 +570,18 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
 
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                     <span>场景：{quote.scene}</span>
-                    <span className="text-sky-600 font-medium">雪之下雪乃</span>
+                    <button
+                      onClick={() => setDrawerTarget({
+                        targetId: quote.id,
+                        targetType: 'quote',
+                        targetTitle: `经典语录 · ${quote.chinese}`,
+                        currentContent: quote.background
+                      })}
+                      className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-sky-600 text-xs font-medium flex items-center gap-1 shadow-2xs transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
+                      <span>研讨 / 申请修改注释</span>
+                    </button>
                   </div>
                 </motion.div>
               ))}
@@ -565,6 +684,27 @@ export const YukinoArchiveView: React.FC<YukinoArchiveViewProps> = ({
         )}
 
       </AnimatePresence>
+
+      {/* Item-level Discussion & Proposal Drawer */}
+      {drawerTarget && (
+        <ItemDiscussionDrawer
+          isOpen={Boolean(drawerTarget)}
+          onClose={() => setDrawerTarget(null)}
+          targetId={drawerTarget.targetId}
+          targetType={drawerTarget.targetType}
+          targetTitle={drawerTarget.targetTitle}
+          currentContent={drawerTarget.currentContent}
+          currentUser={currentUser}
+          onItemUpdated={(field, newValue) => {
+            if (drawerTarget.targetType === 'episode') {
+              setEpisodesList(prev => prev.map(e => e.id === drawerTarget.targetId ? { ...e, synopsis: newValue } : e));
+            } else if (drawerTarget.targetId === 'char_yukino_growth') {
+              setYukinoGrowthText(newValue);
+            }
+          }}
+          onUserScoreUpdated={(u) => onUserUpdated?.(u)}
+        />
+      )}
 
     </div>
   );

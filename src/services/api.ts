@@ -12,7 +12,9 @@ import {
   Post,
   ChatMessage,
   ToSignRequest,
-  CoserCertification
+  CoserCertification,
+  CharacterRelation,
+  Anime
 } from '../types';
 
 import {
@@ -29,6 +31,8 @@ import {
   communityPosts,
   initialChatMessages
 } from './mockData';
+
+import { chronicleService } from './chronicleService';
 
 const STORAGE_KEYS = {
   USER: 'yukino_user',
@@ -77,14 +81,20 @@ export const api = {
   },
 
   getEpisodes(seasonId?: number): Episode[] {
+    const list = chronicleService.getEpisodes();
     if (seasonId) {
-      return episodesData.filter(ep => ep.seasonId === seasonId);
+      return list.filter(ep => ep.seasonId === seasonId);
     }
-    return episodesData;
+    return list;
   },
 
   getEpisodeById(id: string): Episode | undefined {
-    return episodesData.find(ep => ep.id === id);
+    const list = chronicleService.getEpisodes();
+    return list.find(ep => ep.id === id);
+  },
+
+  updateEpisode(episodeId: string, updates: Partial<Episode>): Episode[] {
+    return chronicleService.updateEpisode(episodeId, updates);
   },
 
   // Characters
@@ -127,16 +137,76 @@ export const api = {
     return items.filter(g => g.category === category);
   },
 
-  likeGalleryItem(id: string): GalleryItem[] {
+  // Single-toggle like for gallery (strictly prevents infinite clicking!)
+  likeGalleryItem(id: string): { items: GalleryItem[]; isLiked: boolean } {
     const items = this.getGallery('all');
+    const { isLiked, change } = chronicleService.toggleLikeItem(`gallery_${id}`);
     const updated = items.map(g => {
       if (g.id === id) {
-        return { ...g, likes: g.likes + 1 };
+        return { ...g, likes: Math.max(0, g.likes + change) };
       }
       return g;
     });
     setStorage(STORAGE_KEYS.GALLERY, updated);
+    return { items: updated, isLiked };
+  },
+
+  // Admin Promotion & Demotion Methods (Three-Tier: Developer, Content Admin, Member)
+  promoteUserToAdmin(tier: 'content_admin' | 'developer' = 'content_admin'): User {
+    const user = this.getUser();
+    const updated: User = {
+      ...user,
+      role: tier === 'developer' ? 'ROLE_DEVELOPER' : 'ROLE_CONTENT_ADMIN',
+      adminTier: tier,
+      adminRevoked: false,
+      adminDownvotesReceived: 0
+    };
+    this.updateUser(updated);
     return updated;
+  },
+
+  setUserRole(role: User['role'], adminTier?: User['adminTier']): User {
+    const user = this.getUser();
+    const updated: User = {
+      ...user,
+      role,
+      adminTier: adminTier || (role === 'ROLE_DEVELOPER' ? 'developer' : role === 'ROLE_CONTENT_ADMIN' || role === 'ROLE_ADMIN' ? 'content_admin' : 'member'),
+      adminRevoked: false
+    };
+    this.updateUser(updated);
+    return updated;
+  },
+
+  demoteAdminIfDownvoted(): { user: User; demoted: boolean } {
+    const user = this.getUser();
+    // Developer admin is protected
+    if (user.role === 'ROLE_DEVELOPER' || user.adminTier === 'developer') {
+      return { user, demoted: false };
+    }
+
+    if (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_CONTENT_ADMIN') {
+      const downvotes = (user.adminDownvotesReceived || 0) + 1;
+      if (downvotes >= 5) {
+        // Demote due to excessive community downvotes (>= 5 👎)
+        const updated: User = {
+          ...user,
+          role: 'ROLE_USER',
+          adminTier: 'member',
+          adminRevoked: true,
+          adminDownvotesReceived: downvotes
+        };
+        this.updateUser(updated);
+        return { user: updated, demoted: true };
+      } else {
+        const updated: User = {
+          ...user,
+          adminDownvotesReceived: downvotes
+        };
+        this.updateUser(updated);
+        return { user: updated, demoted: false };
+      }
+    }
+    return { user, demoted: false };
   },
 
   // Merch
@@ -305,6 +375,123 @@ export const api = {
     const updated = list.map(item => item.id === id ? { ...item, status } : item);
     setStorage(STORAGE_KEYS.TO_SIGN, updated);
     return updated;
+  },
+
+  // 认证 Coser 专属审批并签署 To 签
+  approveToSignByCoser(
+    id: string,
+    params: {
+      coserCN: string;
+      coserNote: string;
+      inkColor: string;
+      positionX?: number;
+      positionY?: number;
+    }
+  ): { success: boolean; requests: ToSignRequest[]; error?: string } {
+    const user = this.getUser();
+    if (!user.isCoser && user.role !== 'ROLE_COSER') {
+      return {
+        success: false,
+        requests: this.getToSignRequests(),
+        error: '权限受限：To 签为 Coser 专属摄影授权签署，仅限已认证通过的 Coser 博主审批！普通用户或管理员无权代签。'
+      };
+    }
+
+    const list = this.getToSignRequests();
+    const nowStr = new Date().toISOString().split('T')[0];
+    const updated = list.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          status: 'approved' as const,
+          coserNote: params.coserNote,
+          approvedByCoserCN: params.coserCN || user.coserCN || user.nickname,
+          inkColor: params.inkColor || item.inkColor,
+          positionX: params.positionX ?? item.positionX,
+          positionY: params.positionY ?? item.positionY,
+          signedAt: nowStr
+        };
+      }
+      return item;
+    });
+
+    setStorage(STORAGE_KEYS.TO_SIGN, updated);
+    return { success: true, requests: updated };
+  },
+
+  // Episode Video Pins (固定时长打钉写看法)
+  getEpisodePins(episodeId: string) {
+    return chronicleService.getEpisodePins(episodeId);
+  },
+
+  addEpisodePin(params: {
+    episodeId: string;
+    timestampSeconds: number;
+    timestampDisplay: string;
+    content: string;
+    type: 'insight' | 'lore' | 'proposal';
+  }) {
+    const user = this.getUser();
+    return chronicleService.addEpisodePin({ ...params, user });
+  },
+
+  voteEpisodePin(pinId: string, direction: 'up' | 'down') {
+    return chronicleService.voteEpisodePin(pinId, direction);
+  },
+
+  // Revision History Logs (修改记录)
+  getRevisionLogs(targetId?: string) {
+    return chronicleService.getRevisionLogs(targetId);
+  },
+
+  recordRevisionLog(params: Parameters<typeof chronicleService.recordRevisionLog>[0]) {
+    return chronicleService.recordRevisionLog(params);
+  },
+
+  // Discussion & Proposal Comments
+  getComments(targetId?: string) {
+    return chronicleService.getComments(targetId);
+  },
+
+  addComment(params: Parameters<typeof chronicleService.addComment>[0]) {
+    return chronicleService.addComment(params);
+  },
+
+  addProposal(params: Parameters<typeof chronicleService.addProposal>[0]) {
+    return chronicleService.addProposal(params);
+  },
+
+  voteComment(commentId: string, direction: 'up' | 'down') {
+    return chronicleService.voteComment(commentId, direction);
+  },
+
+  adoptProposal(commentId: string) {
+    const user = this.getUser();
+    return chronicleService.adoptProposal(commentId, user);
+  },
+
+  adminDirectEdit(params: Parameters<typeof chronicleService.adminDirectEdit>[0]) {
+    return chronicleService.adminDirectEdit(params);
+  },
+
+  addCommentReply(commentId: string, reply: Parameters<typeof chronicleService.addCommentReply>[1]) {
+    return chronicleService.addCommentReply(commentId, reply);
+  },
+
+  getRelations(): CharacterRelation[] {
+    return chronicleService.getRelations();
+  },
+
+  updateRelation(rel: CharacterRelation) {
+    return chronicleService.updateRelation(rel);
+  },
+
+  getAnimeList(): Anime[] {
+    return chronicleService.getAnimeList();
+  },
+
+  getAnimeById(id: string) {
+    return chronicleService.getAnimeById(id);
   },
 
   // Coser Certification

@@ -5,6 +5,7 @@ import { Character, Diary, Post, User } from '../../types';
 
 interface HomeViewProps {
   onNavigate: (tab: string) => void;
+  onNavigateToCharacter?: (charId: string) => void;
   yukino: Character;
   characters: Character[];
   recentDiaries: Diary[];
@@ -16,6 +17,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onNavigate,
+  onNavigateToCharacter,
   yukino,
   characters,
   recentDiaries,
@@ -455,7 +457,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {characters.map((char, cIdx) => (
             <motion.div
               key={char.id}
-              onClick={() => onNavigate('oregairu')}
+              onClick={() => {
+                if (onNavigateToCharacter) {
+                  onNavigateToCharacter(char.id);
+                } else {
+                  onNavigate('oregairu');
+                }
+              }}
               whileHover={{ 
                 y: -8, 
                 scale: 1.05, 

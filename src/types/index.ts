@@ -1,15 +1,111 @@
+export type UserRole = 'ROLE_DEVELOPER' | 'ROLE_CONTENT_ADMIN' | 'ROLE_USER' | 'ROLE_COSER' | 'ROLE_ADMIN';
+
 export interface User {
   id: string;
   username: string;
   nickname: string;
   avatar: string;
   bio: string;
-  role: 'ROLE_USER' | 'ROLE_COSER' | 'ROLE_ADMIN';
+  role: UserRole;
+  adminTier?: 'developer' | 'content_admin' | 'member'; // 三层权限分类：开发者管理员 | 社区内容管理员 | 普通成员
   email: string;
   isCoser?: boolean;
   coserCN?: string;
   createdAt: string;
   contributionPoints?: number; // 社区贡献度
+  approvedModificationsCount?: number; // 成功被采纳的编年史/档案修改篇数
+  reputationScore?: number; // 综合声望分
+  adminDownvotesReceived?: number; // 作为管理员收到的 👎 数量 (>=5 将被自动撤销内容管理员权限)
+  adminRevoked?: boolean; // 是否曾被撤销管理员
+}
+
+export type ChronicleCommentType = 'normal' | 'proposal';
+
+export interface CommentReply {
+  id: string;
+  commentId: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userRole: UserRole;
+  content: string;
+  createdAt: string;
+  likes: number;
+}
+
+export interface ChronicleComment {
+  id: string;
+  targetId: string; // 关联的 Episode ID, Timeline node ID, Quote ID, Outfit ID, Relation ID 或 Character ID
+  targetType?: 'episode' | 'timeline' | 'quote' | 'outfit' | 'character' | 'relation' | 'lore' | 'season';
+  targetTitle?: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userRole: UserRole;
+  type: ChronicleCommentType; // 'normal' 普通讨论/感悟 | 'proposal' 申请修改提议
+  content: string; // 讨论正文或修改提议概述
+  createdAt: string;
+  upvotes: number; // 👍 社区赞同 / 认可数
+  downvotes: number; // 👎 社区反对 / 质疑数
+  // 仅在 type === 'proposal' 时有效:
+  currentContent?: string; // 当前正文内容
+  proposedTitle?: string;
+  proposedSynopsis?: string;
+  proposedContent?: string; // 建议修改为
+  justification?: string; // 修改理由
+  references?: string; // 引用依据 (例如 S1E12, S2E08, 角色名台词等)
+  status?: 'pending' | 'approved' | 'rejected';
+  approvedAt?: string;
+  approvedBy?: string;
+  replies?: CommentReply[]; // 评论内部嵌套回复线程
+}
+
+export interface RevisionLog {
+  id: string;
+  targetId: string;
+  targetType: 'episode' | 'timeline' | 'quote' | 'outfit' | 'character' | 'lore';
+  targetTitle: string;
+  editorId: string;
+  editorName: string;
+  editorRole: UserRole;
+  action: 'admin_direct_edit' | 'community_proposal_adopted';
+  changes: {
+    field: string;
+    before: string;
+    after: string;
+  }[];
+  reason: string;
+  timestamp: string;
+}
+
+export interface EpisodePin {
+  id: string;
+  episodeId: string;
+  timestampSeconds: number; // 钉子对应秒数，如 215 (03:35)
+  timestampDisplay: string; // "03:35"
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userRole: UserRole;
+  content: string; // 钉子内容/感悟/考据
+  type: 'insight' | 'lore' | 'proposal'; // 普通感悟 | 剧情细节考据 | 剧情修改提议
+  upvotes: number;
+  downvotes: number;
+  createdAt: string;
+}
+
+export interface AdminApplication {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  reason: string; // 申请理由
+  qualifications: string; // 资历与考据经验说明
+  approvedEditsCount: number; // 当前成功修改篇数
+  score: number; // 当前综合声望分
+  submittedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedAt?: string;
 }
 
 export interface ArchiveContribution {
@@ -23,7 +119,7 @@ export interface ArchiveContribution {
   likes: number; // 获得的社区点赞数
   status: 'approved' | 'pending';
   basePoints: number; // 基础补全贡献值 (50)
-  likePoints: number; // 点赞加权贡献值 (likes * 10)
+  likePoints: number; // 点赞加权贡献值
   totalPoints: number; // basePoints + likePoints
 }
 
@@ -31,19 +127,25 @@ export interface ContributionSummary {
   totalPoints: number; // 总贡献值
   archiveCount: number; // 补全档案条目数
   totalLikesReceived: number; // 累计获得的被点赞总数
+  totalViewsReceived: number; // 累计浏览量
+  totalFavoritesReceived: number; // 累计收藏量
   level: number; // 贡献者等级 (1-10)
   levelTitle: string; // 荣誉称号, e.g. "资深档案馆典籍官"
-  // 公式: 贡献度 = (档案补全度 * 0.4) + (获得的被点赞总数 * 0.6)
   archiveCompleteness: number; // 档案补全度 (0-100%)
-  archiveFormulaWeight: number; // 0.4
-  likeFormulaWeight: number; // 0.6
-  archiveWeightedScore: number; // 档案补全度 * 0.4
-  likeWeightedScore: number; // 获得的被点赞总数 * 0.6
+  // 精细化权重系统 (按用户要求: 浏览千分之一 0.001, 点赞百分之一 0.01, 收藏百分之二 0.02)
+  viewWeight: number; // 0.001
+  likeWeight: number; // 0.01
+  favoriteWeight: number; // 0.02
+  viewWeightedScore: number;
+  likeWeightedScore: number;
+  favoriteWeightedScore: number;
+  approvedEditsBonus: number; // 成功采纳修改奖励分
   formulaScore: number; // 最终加权贡献度
   targetQuota: number; // 当期阶梯目标额度
   quotaPercent: number; // 额度达成百分比
-  archiveWeight?: number;
-  likeWeight?: number;
+  approvedEditsCount: number; // 成功采纳修改篇数
+  canAutoPromoteToAdmin: boolean; // 是否达到免审直接成为管理员的资格
+  adminDownvotes: number; // 管理员反对票
 }
 
 export interface Character {
@@ -71,6 +173,29 @@ export interface CharacterRelation {
   targetId: string;
   relationType: string;
   description: string;
+  keyEvents?: string[]; // 关键剧情记录
+  developmentStages?: {
+    stage: string;
+    description: string;
+  }[]; // 发展阶段
+  relatedEpisodes?: string[]; // 相关剧集
+  relatedQuotes?: string[]; // 相关语录
+  updatedAt?: string;
+}
+
+export interface Anime {
+  id: string; // 'oregairu'
+  slug: string;
+  title: string;
+  japaneseTitle: string;
+  romaji: string;
+  coverImage: string;
+  year: string;
+  author: string;
+  description: string;
+  seasonsCount: number;
+  episodesCount: number;
+  status: 'completed' | 'ongoing';
 }
 
 export interface Season {
@@ -254,6 +379,9 @@ export interface ToSignRequest {
   signedImageUrl?: string;
   author?: string;
   syncToFeed?: boolean;
+  coserNote?: string; // Coser 亲手签署的附言寄语
+  approvedByCoserCN?: string; // 签批此单的认证 Coser 专属 CN
+  signedAt?: string;
 }
 
 export interface CoserCertification {
