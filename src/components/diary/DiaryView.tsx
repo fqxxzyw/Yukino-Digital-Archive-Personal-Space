@@ -1,3 +1,4 @@
+import archiveImage0 from '../../assets/images/yukino_portrait_editorial_1790218150964.jpg';
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -565,7 +566,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                     <div className="flex items-start sm:items-center gap-2.5 min-w-0">
                       <div className="relative shrink-0 w-8 h-8 rounded-full overflow-hidden border border-sky-300 shadow-xs mt-0.5 sm:mt-0">
                         <img
-                          src="/src/assets/images/yukino_portrait_editorial_1790218150964.jpg"
+                          src={archiveImage0}
                           alt="雪之下雪乃"
                           className="w-full h-full object-cover"
                         />
@@ -802,7 +803,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                     <div className="flex items-center gap-2">
                       <div className="relative w-6 h-6 rounded-full overflow-hidden border border-sky-300 shrink-0">
                         <img
-                          src="/src/assets/images/yukino_portrait_editorial_1790218150964.jpg"
+                          src={archiveImage0}
                           alt="雪乃"
                           className="w-full h-full object-cover"
                         />
@@ -1139,7 +1140,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                       <div className="flex items-center gap-2.5">
                         <div className="relative w-9 h-9 rounded-full overflow-hidden border border-sky-300 shadow-xs">
                           <img
-                            src="/src/assets/images/yukino_portrait_editorial_1790218150964.jpg"
+                            src={archiveImage0}
                             alt="雪乃"
                             className="w-full h-full object-cover"
                           />

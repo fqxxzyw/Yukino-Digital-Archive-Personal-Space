@@ -1,3 +1,7 @@
+import archiveImage0 from '../assets/images/yukino_portrait_editorial_1790218150964.jpg';
+import archiveImage1 from '../assets/images/yukino_hero_snow_1790218140649.jpg';
+import archiveImage2 from '../assets/images/oregairu_clubroom_window_1790218170510.jpg';
+import archiveImage3 from '../assets/images/yukino_outfit_yukata_1790218160373.jpg';
 import {
   Character,
   CharacterRelation,
@@ -63,8 +67,8 @@ export const yukinoData: Character = {
   school: '总武高等学校',
   grade: '2年J班 (国际教养班)',
   club: '侍奉部 (部长)',
-  avatar: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
-  image: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+  avatar: archiveImage0,
+  image: archiveImage0,
   summary: '总武高中的“冰之女王”。容姿端丽、学力出众，却因清冷高傲的气质独行于世。',
   description: '名门雪之下家的次女。有着极强的自尊心与责任感，信奉“能者多劳，拯救无能之人是优秀者的义务”。外表清冷理性，内心却细腻敏感，极度喜爱猫咪与潘先生（Pan-san）。在侍奉部的日常与委托中，逐渐学会向他人敞开心扉，寻找不掺杂伪饰的“真物”。',
   tags: ['侍奉部部长', '冰之女王', '完美主义', '猫咪狂热', '潘先生爱好者', '早见沙织'],
@@ -173,7 +177,7 @@ export const animeListData: Anime[] = [
     title: '我的青春恋爱物语果然有问题。',
     japaneseTitle: 'やはり俺の青春ラブコメはまちがっている。',
     romaji: 'Yahari Ore no Seishun Love Come wa Machigatteiru.',
-    coverImage: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    coverImage: archiveImage1,
     year: '2013 - 2020',
     author: '渡航 (Watari Wataru)',
     description: '高中生比企谷八幡性格孤僻倔强，被生活指导老师平冢静强制带入“侍奉部”，与全校第一的美少女雪之下雪乃相遇。在解决形形色色的委托中，探寻不掺杂伪饰的“真物”。',
@@ -378,7 +382,7 @@ export const episodesData: Episode[] = [
     title: '这样他们错误的青春就拉开了帷幕。',
     japaneseTitle: 'こうして彼らのまちがった青春が始まる。',
     synopsis: '比企谷八幡因满篇牢骚的作文被平冢老师带入侍奉部，初次遇见孤高看书的雪之下雪乃。两人的理念发生猛烈冲突。',
-    imageUrl: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    imageUrl: archiveImage2,
     charactersInvolved: ['雪之下雪乃', '比企谷八幡', '平冢静'],
     keyEvents: ['侍奉部初相遇', '比企谷论无用论', '由比滨结衣做饼干委托接下']
   },
@@ -389,7 +393,7 @@ export const episodesData: Episode[] = [
     title: '他又一次回到了当初来的那条路。',
     japaneseTitle: 'またしても、彼は元の居場所へ引き返す。',
     synopsis: '开学初撞击八幡自行车的豪车真相逐渐浮现，雪乃内心的负担与八幡的距离感产生微妙起伏。',
-    imageUrl: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    imageUrl: archiveImage1,
     charactersInvolved: ['雪之下雪乃', '比企谷八幡', '雪之下阳乃'],
     keyEvents: ['豪车车祸真相隐现', '川崎沙希打工事件', '雪乃的歉意与沉默']
   },
@@ -400,7 +404,7 @@ export const episodesData: Episode[] = [
     title: '虽然如此，他和她和她的青春依旧是错误的。',
     japaneseTitle: 'それでも彼と彼女と彼女の青春はまちがい続ける。',
     synopsis: '文化祭筹备陷入混乱，相模南临阵退缩。雪乃过度疲劳，八幡以最冷酷的反派姿态逼出相模，挽救了闭幕式。',
-    imageUrl: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+    imageUrl: archiveImage0,
     charactersInvolved: ['雪之下雪乃', '比企谷八幡', '由比滨结衣', '相模南'],
     keyEvents: ['文化祭危机', '八幡天台自爆破局', '雪乃对八幡做法的复杂神情']
   },
@@ -411,7 +415,7 @@ export const episodesData: Episode[] = [
     title: '尽管如此，比企谷八幡还是说。',
     japaneseTitle: 'それでも、比企谷八幡は。',
     synopsis: '圣诞联合活动陷入空谈怪圈。八幡在平冢老师开导下回到部室，当着雪乃与结衣的面泣诉：“我想要真物”。',
-    imageUrl: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    imageUrl: archiveImage2,
     charactersInvolved: ['雪之下雪乃', '比企谷八幡', '由比滨结衣', '平冢静'],
     keyEvents: ['八幡敞开心扉流泪', '雪乃的动容与震撼', '侍奉部共同全力协助圣诞活动']
   },
@@ -422,7 +426,7 @@ export const episodesData: Episode[] = [
     title: '只有那个气味，无论在哪个季节都宣告着终结。',
     japaneseTitle: 'いつでも、その香りは終わりの季節を告げている。',
     synopsis: '在即将干涸的天桥上，八幡追上雪乃，吐露了哪怕是不讲道理、麻烦至极也要纠缠一生的誓言。雪乃回应：“请把你的生命交给我”。',
-    imageUrl: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    imageUrl: archiveImage1,
     charactersInvolved: ['雪之下雪乃', '比企谷八幡'],
     keyEvents: ['天桥真物告白', '共同办好毕业舞会誓约', '坚冰终于彻底融化']
   }
@@ -434,7 +438,7 @@ export const outfitsData: Outfit[] = [
     name: '总武高中秋季正统制服',
     japaneseName: '総武高校 冬期制服',
     type: 'uniform',
-    imageUrl: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+    imageUrl: archiveImage0,
     color: '#1e293b 深海绀蓝 / 纯白 / 绯红领结',
     description: '总武高等学校的标准校服，修身的绀青色西装外套搭配白色内衬衬衫与赤红领结，下身为格纹百褶短裙。配以雪乃标志性的双侧黑发缎带。',
     firstAppearance: 'S1EP01 侍奉部初次碰面',
@@ -449,7 +453,7 @@ export const outfitsData: Outfit[] = [
     name: '夏季祭典牵牛花蓝染浴衣',
     japaneseName: '夏祭り 藍染め朝顔浴衣',
     type: 'yukata',
-    imageUrl: '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg',
+    imageUrl: archiveImage3,
     color: '#0284c7 浅葱冰蓝 / 靛蓝花纹 / 牙白腰带',
     description: '烟火大会之夜所穿着的传统日式浴衣，深浅交融的蓝白碎花如同夏夜落雪，长发绾起露出优雅的颈线，端庄柔美。',
     firstAppearance: 'S1EP09 夏日祭典花火大会',
@@ -464,7 +468,7 @@ export const outfitsData: Outfit[] = [
     name: '初雪呢绒牛角扣大衣',
     japaneseName: 'ダッフルコート＆マフラー',
     type: 'winter',
-    imageUrl: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    imageUrl: archiveImage1,
     color: '#f8fafc 雪原白 / #94a3b8 雾霾蓝围巾',
     description: '寒冬腊月雪乃常穿的纯白连帽牛角扣羊毛大衣，内搭千鸟格围巾与黑色加厚裤袜。迎风站立在雪中如同一只安静的小猫。',
     firstAppearance: 'S2EP10 新年初诣参拜',
@@ -479,7 +483,7 @@ export const outfitsData: Outfit[] = [
     name: '潘先生刺绣家庭围裙',
     japaneseName: 'パンさん刺繍エプロン',
     type: 'casual',
-    imageUrl: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    imageUrl: archiveImage2,
     color: '#bae6fd 浅天蓝 / 米黄绑带',
     description: '家政课与居家料理时穿着的棉质围裙，胸口精心绣着她最挚爱的“潘先生”（Pan-san）熊猫图案，动作利落娴熟。',
     firstAppearance: 'S1EP01 家政部烘焙指导',
@@ -596,7 +600,7 @@ export const galleryData: GalleryItem[] = [
     id: 'gal_01',
     title: '雪落总武高 · 冬晨独览',
     category: 'official',
-    imageUrl: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+    imageUrl: archiveImage0,
     aspectRatio: 'portrait',
     author: '官方主视觉画师',
     source: 'TV动画第三季角色原案集',
@@ -608,7 +612,7 @@ export const galleryData: GalleryItem[] = [
     id: 'gal_02',
     title: '冰蓝深处 · 远眺冬城之雪',
     category: 'wallpaper',
-    imageUrl: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    imageUrl: archiveImage1,
     aspectRatio: 'landscape',
     author: 'Art Direction Team',
     source: '雪之下雪乃概念壁纸库',
@@ -620,7 +624,7 @@ export const galleryData: GalleryItem[] = [
     id: 'gal_03',
     title: '夏祭夜花火 · 牵牛花之恋',
     category: 'novel',
-    imageUrl: '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg',
+    imageUrl: archiveImage3,
     aspectRatio: 'portrait',
     author: 'Ponkan⑧ 原作插图',
     source: '小学馆GAGAGA文库插图集',
@@ -632,7 +636,7 @@ export const galleryData: GalleryItem[] = [
     id: 'gal_04',
     title: '黄昏斜阳 · 侍奉部旧日光景',
     category: 'screenshot',
-    imageUrl: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    imageUrl: archiveImage2,
     aspectRatio: 'landscape',
     author: 'Feel. 动画制作组',
     source: '动画第二季第8话高保真截帧',
@@ -678,7 +682,7 @@ export const merchData: MerchItem[] = [
     manufacturer: 'eStream / SSF',
     releaseDate: '2023年3月',
     price: '¥ 1,980 (参考)',
-    imageUrl: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+    imageUrl: archiveImage0,
     description: '身披淡蓝水晶质感的花嫁婚纱，长发如瀑散落，手中捧着雪白花束，回眸一瞬的神态极尽温婉。',
     scale: '1/7 比例模型 (高约27cm)',
     status: 'released'
@@ -690,7 +694,7 @@ export const merchData: MerchItem[] = [
     manufacturer: '寿屋 (Kotobukiya)',
     releaseDate: '2021年12月',
     price: '¥ 680 (参考)',
-    imageUrl: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    imageUrl: archiveImage2,
     description: '坐在木质课桌上的经典造型，手中拿着书籍，眼神清澈而坚定，还原了第一季动画中的初见震撼。',
     scale: '1/8 比例模型',
     status: 'released'
@@ -702,7 +706,7 @@ export const merchData: MerchItem[] = [
     manufacturer: 'TBS Animation Store',
     releaseDate: '2022年6月',
     price: '¥ 320',
-    imageUrl: '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg',
+    imageUrl: archiveImage3,
     description: '雪之下雪乃最痴迷的吉祥物潘先生（Pan-san）官方原尺寸复刻，拥有标志性的慵懒呆萌表情与超柔亲肤触感。',
     status: 'released'
   },
@@ -713,7 +717,7 @@ export const merchData: MerchItem[] = [
     manufacturer: '小学馆',
     releaseDate: '2021年4月',
     price: '¥ 260',
-    imageUrl: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    imageUrl: archiveImage1,
     description: '收录轻小说全14卷加番外全部彩色插图、未公开黑白稿件及早见沙织采访纪念对谈。',
     status: 'released'
   }
@@ -731,7 +735,7 @@ export const diariesData: Diary[] = [
 我们常常害怕把内心的软弱展现给别人，宁愿缩在坚硬的冰壳里。可是如果不去打破那层虚妄的保护，又怎么能触碰到真正温暖的双手呢？
 
 希望在这个冬天，每个人都能找到自己不会妥协的真物。`,
-    coverImage: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    coverImage: archiveImage1,
     date: '2026-01-03',
     weather: '初雪 · 零下2°C',
     tags: ['春物重温', '千叶随笔', '冬雪', '真物'],
@@ -763,7 +767,7 @@ export const diariesData: Diary[] = [
 动漫人物不是冷冰冰的百科条目，那些随季节更迭的校服与浴衣、那些在夕阳部室里未说出口的叹息、早见沙织声线里微妙的颤动，都是值得被如艺术品般珍藏的吉光片羽。
 
 在这个网站里，我将个人生活记录、日记、社区动态与雪乃档案融为一体。它不仅是我的避风港，也是喜欢雪乃和春物的朋友们的一处静谧茶室。`,
-    coverImage: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    coverImage: archiveImage2,
     date: '2025-12-25',
     weather: '晴朗 · 5°C',
     tags: ['建站随笔', '设计理念', '数字档案'],
@@ -791,7 +795,7 @@ export const diariesData: Diary[] = [
     content: `下午煮了一壶大吉岭红茶。热气在冰凉的玻璃窗上结成一层细腻的水雾，慢慢用手指划过，外面枯黄的银杏树便模糊成一团柔和的色块。
 翻开《雪之下雪乃原画集》，看到由比滨和雪乃在夏祭夜里并肩看烟花的插画。即使性格南辕北辙，那份想要靠近的心情却是那般真挚而坦率。
 生活里或许总有解不开的繁复谜题，但只要身边还有能一起安静喝茶的人，寒冬便不再漫长。`,
-    coverImage: '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg',
+    coverImage: archiveImage3,
     date: '2026-01-18',
     weather: '晴朗微寒 · 3°C',
     tags: ['红茶日常', '陪伴', '千叶午后', '治愈'],
@@ -819,7 +823,7 @@ export const diariesData: Diary[] = [
     content: `千叶站的夕阳总是落得很快。电车呼啸而过带起的冷风卷走最后一缕金红，站台上熙熙攘攘的人群各自赶路，面孔在暮色中显得疏离而麻木。
 忽然想起八幡在文化祭天台上的那场自爆。为了保全虚伪的表面和谐，选择让自己成为所有人唾弃的靶子。那种近乎残忍的温柔，究竟需要吞下多少苦涩才能下定决心？
 有时候也会觉得迷茫与无力，仿佛不论怎么努力，人与人之间的隔阂也无法彻底消融。`,
-    coverImage: '/src/assets/images/oregairu_clubroom_window_1790218170510.jpg',
+    coverImage: archiveImage2,
     date: '2025-11-12',
     weather: '阴冷暮色 · 8°C',
     tags: ['暮色随想', '千叶电车', '迷惘', '八幡天台'],
@@ -847,7 +851,7 @@ export const diariesData: Diary[] = [
     content: `趁着周末去了稻毛海滨公园。秋天的海水褪去了夏日的喧闹，呈现出一种近乎透明的浅蓝。
 沿着海堤走了两个多小时，耳机里单曲循环着早见沙织的角色歌《雪融之时》。海风吹起围巾的一角，远远能望见千叶港塔在晴空下耸立的轮廓。
 什么都不去预设，只是纯粹地行走和呼吸。这样的下午，让内心纷乱的思绪重新落定归位。`,
-    coverImage: '/src/assets/images/yukino_hero_snow_1790218140649.jpg',
+    coverImage: archiveImage1,
     date: '2025-10-08',
     weather: '秋高气爽 · 16°C',
     tags: ['稻毛海岸', '千叶散步', '秋日', '早见沙织'],
@@ -882,8 +886,8 @@ export const communityPosts: Post[] = [
     coserCN: '浅羽由乃',
     content: '「即使那是个错误的选择，我们也在一同找寻属于自己的答案。」\n今天在老校舍拍了雪乃的冬制服正片！千叶的初冬风真的很大，但戴上围巾那一瞬间，仿佛真的听到了部室里推开拉门的声响。开放申请本套图的专属 To 签啦，可以在下方点击直接定制~ ✨',
     images: [
-      '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
-      '/src/assets/images/yukino_hero_snow_1790218140649.jpg'
+      archiveImage0,
+      archiveImage1
     ],
     createdAt: '2小时前',
     likes: 348,
@@ -899,7 +903,7 @@ export const communityPosts: Post[] = [
     userRole: 'ROLE_USER',
     content: '终于收到了SSF这只纯白花嫁雪乃！面相还原度超越预期，尤其是眼眸处透出的水光感和早见沙织角色的清冷感拿捏得恰到好处。摆在书桌前，连打代码都变得心平气和了。',
     images: [
-      '/src/assets/images/yukino_outfit_yukata_1790218160373.jpg'
+      archiveImage3
     ],
     createdAt: '昨天 19:40',
     likes: 195,
@@ -914,7 +918,7 @@ export const initialChatMessages = [
     id: 'msg_01',
     userId: 'bot_yukino',
     userName: '雪之下雪乃',
-    userAvatar: '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg',
+    userAvatar: archiveImage0,
     content: '欢迎来到总武高侍奉部。如果有什么烦恼或委托，可以写在留言簿上。当然，我不保证每一件无聊的事都会插手。',
     timestamp: '19:30',
     isSelf: false,

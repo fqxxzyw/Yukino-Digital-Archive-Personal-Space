@@ -1,4 +1,6 @@
 # 雪之下雪乃 · 个人生活空间与数字档案馆
+
+[GitHub Pages 在线使用](https://fqxxzyw.github.io/Yukino-Digital-Archive-Personal-Space/)
 ## 顶级 UI 与产品架构设计方案及规范文档 (Design System & Specification)
 **版本**: v3.0 Apple Liquid Glass, Wobble Physics & Focus-Dimming Edition  
 **设计理念核心**: 「解构 - 提炼 - 重构」 · 拒绝盲目照搬，以场景创新铸造业务壁垒  

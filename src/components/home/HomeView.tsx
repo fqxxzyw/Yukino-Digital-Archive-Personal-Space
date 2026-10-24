@@ -1,3 +1,4 @@
+import archiveImage0 from '../../assets/images/yukino_hero_snow_1790218140649.jpg';
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, BookOpen, Sparkles, Feather, Compass, Heart, MessageSquare, Play, Volume2, Cpu, Eye, Layers, ShieldCheck } from 'lucide-react';
@@ -37,7 +38,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {/* Ambient Background Banner */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
               <img
-                src="/src/assets/images/yukino_hero_snow_1790218140649.jpg"
+                src={archiveImage0}
                 alt="Winter Snow Landscape"
                 className="w-full h-full object-cover object-center filter saturate-75 opacity-85 scale-105"
               />

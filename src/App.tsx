@@ -1,3 +1,4 @@
+import archiveImage0 from './assets/images/yukino_portrait_editorial_1790218150964.jpg';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
@@ -254,7 +255,7 @@ export default function App() {
     setTimeout(() => {
       let reply = '';
       let replyAuthor = '雪之下雪乃';
-      let replyAvatar = '/src/assets/images/yukino_portrait_editorial_1790218150964.jpg';
+      let replyAvatar = archiveImage0;
 
       if (lower.includes('真物') || lower.includes('代价')) {
         reply = '追求不掺杂虚假的真实关系，势必伴随着打破现状的刺痛。但如果不去探寻，便只能永远栖身于谎言构筑的温室之中。';
